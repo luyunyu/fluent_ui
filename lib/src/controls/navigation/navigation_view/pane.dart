@@ -559,11 +559,13 @@ class _TopNavigationPane extends StatefulWidget {
     required this.pane,
     this.listKey,
     this.appBar,
+    this.paneHeight
   }) : super(key: pane.key);
 
   final NavigationPane pane;
   final GlobalKey? listKey;
   final NavigationAppBar? appBar;
+  final double? paneHeight;
 
   @override
   State<_TopNavigationPane> createState() => _TopNavigationPaneState();
@@ -701,7 +703,7 @@ class _TopNavigationPaneState extends State<_TopNavigationPane> {
     final height = widget.pane.size?.topHeight ?? kOneLineTileHeight;
     return SizedBox(
       key: widget.pane.paneKey,
-      height: paneHeight,
+      height: widget.paneHeight ?? paneHeight,
       child: Row(children: [
         if (widget.pane.leading != null)
           Padding(

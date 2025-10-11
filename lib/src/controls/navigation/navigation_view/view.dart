@@ -44,6 +44,7 @@ class NavigationView extends StatefulWidget {
   const NavigationView({
     super.key,
     this.appBar,
+    this.paneHeight,
     this.pane,
     this.content,
     this.clipBehavior = Clip.antiAlias,
@@ -79,6 +80,7 @@ class NavigationView extends StatefulWidget {
   /// left, on the top, or above the body.
   final NavigationPane? pane;
 
+  final double? paneHeight;
   /// The content of the pane.
   ///
   /// If [pane] is provided, this is ignored
@@ -532,6 +534,7 @@ class NavigationViewState extends State<NavigationView> {
                     pane: pane,
                     listKey: _listKey,
                     appBar: widget.appBar,
+                    paneHeight: widget.paneHeight,
                   ),
                 ),
                 Expanded(child: content),
