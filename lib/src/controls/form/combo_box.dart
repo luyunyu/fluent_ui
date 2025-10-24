@@ -160,6 +160,9 @@ class _ComboBoxItemButtonState<T> extends State<_ComboBoxItemButton<T>> {
   @override
   Widget build(BuildContext context) {
     assert(debugCheckHasFluentTheme(context));
+
+    final bool isSelected = widget.itemIndex == widget.route.selectedIndex;
+
     Widget child = HoverButton(
       autofocus: widget.itemIndex == widget.route.selectedIndex,
       builder: (context, states) {
@@ -175,7 +178,7 @@ class _ComboBoxItemButtonState<T> extends State<_ComboBoxItemButton<T>> {
               decoration: BoxDecoration(
                 color: ButtonThemeData.uncheckedInputColor(
                   theme,
-                  states.isFocused ? {WidgetState.hovered} : states,
+                  states.isFocused || isSelected ? {WidgetState.hovered} : states,
                   transparentWhenNone: true,
                 ),
                 borderRadius: BorderRadius.circular(4.0),
@@ -183,7 +186,7 @@ class _ComboBoxItemButtonState<T> extends State<_ComboBoxItemButton<T>> {
               padding: widget.padding,
               child: widget.route.items[widget.itemIndex],
             ),
-            if (states.isFocused)
+            if (states.isFocused || isSelected)
               AnimatedPositionedDirectional(
                 duration: theme.fastAnimationDuration,
                 curve: theme.animationCurve,
