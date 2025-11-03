@@ -722,7 +722,7 @@ class _TopNavigationPaneState extends State<_TopNavigationPane> {
               key: overflowKey,
               controller: overflowController,
               child: PaneItem(
-                icon: const Icon(FluentIcons.more),
+                icon: const Padding(padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 9.0), child: Icon(FluentIcons.more, size: 14,),),
                 body: const SizedBox.shrink(),
               ).build(
                 context,
@@ -738,18 +738,21 @@ class _TopNavigationPaneState extends State<_TopNavigationPane> {
                         minimalPaneOpen: view.minimalPaneOpen,
                         previousItemIndex: view.previousItemIndex,
                         pane: view.pane,
-                        child: MenuFlyout(
-                          items: _localItemHold
-                              .sublist(hiddenPaneItems.first)
-                              .map((i) {
-                            final item = widget.pane.items[i];
-                            return _buildMenuPaneItem(
-                              context,
-                              item,
-                              _onPressed,
-                            );
-                          }).toList(),
-                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8.0),
+                          child: MenuFlyout(
+                            items: _localItemHold
+                                .sublist(hiddenPaneItems.first)
+                                .map((i) {
+                              final item = widget.pane.items[i];
+                              return _buildMenuPaneItem(
+                                context,
+                                item,
+                                _onPressed,
+                              );
+                            }).toList(),
+                          ),
+                        )
                       );
                     },
                   );
