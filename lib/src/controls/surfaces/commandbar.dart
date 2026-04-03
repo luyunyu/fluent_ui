@@ -11,11 +11,14 @@ import 'package:flutter/foundation.dart';
 class CommandBarCard extends StatelessWidget {
   /// Creates a command bar card.
   const CommandBarCard({
-    super.key,
     required this.child,
-    this.margin = EdgeInsets.zero,
-    this.padding = const EdgeInsets.symmetric(horizontal: 6.0, vertical: 4.0),
-    this.borderRadius = const BorderRadius.all(Radius.circular(4.0)),
+    super.key,
+    this.margin = EdgeInsetsDirectional.zero,
+    this.padding = const EdgeInsetsDirectional.symmetric(
+      horizontal: 6,
+      vertical: 4,
+    ),
+    this.borderRadius = const BorderRadius.all(Radius.circular(4)),
     this.borderColor,
     this.backgroundColor,
   });
@@ -82,24 +85,52 @@ enum CommandBarOverflowBehavior {
 /// Signature of function that will build a [CommandBarItem] with some
 /// functionality to trigger an action (e.g., a clickable button), and
 /// it will call the given callback when the action is triggered.
-typedef CommandBarActionItemBuilder = CommandBarItem Function(
-  VoidCallback onPressed,
-);
+typedef CommandBarActionItemBuilder =
+    CommandBarItem Function(VoidCallback onPressed);
 
-/// Command bars provide quick access to common tasks. This could be
-/// application-level or page-level commands.
+/// A toolbar for displaying frequently-used commands.
 ///
-/// A command bar is composed of a series of [CommandBarItem]s, which each could
-/// be a [CommandBarButton] or a custom [CommandBarItem].
+/// [CommandBar] provides quick access to app-level or page-level actions.
+/// It contains a series of [CommandBarItem]s such as buttons, toggles,
+/// and separators.
 ///
-/// If there is not enough horizontal space to display all items, the overflow
-/// behavior is determined by [overflowBehavior].
+/// ![CommandBar example](https://learn.microsoft.com/en-us/windows/apps/design/controls/images/controls-appbar-icons.png)
 ///
-/// ![CommandBar example](https://docs.microsoft.com/en-us/windows/apps/design/controls/images/controls-appbar-icons.png)
+/// {@tool snippet}
+/// This example shows a basic command bar:
+///
+/// ```dart
+/// CommandBar(
+///   primaryItems: [
+///     CommandBarButton(
+///       icon: Icon(FluentIcons.add),
+///       label: Text('New'),
+///       onPressed: () {},
+///     ),
+///     CommandBarButton(
+///       icon: Icon(FluentIcons.delete),
+///       label: Text('Delete'),
+///       onPressed: () {},
+///     ),
+///   ],
+/// )
+/// ```
+/// {@end-tool}
+///
+/// ## Overflow behavior
+///
+/// When items don't fit, the [overflowBehavior] determines what happens:
+///
+/// * [CommandBarOverflowBehavior.scrolling] - Items scroll horizontally
+/// * [CommandBarOverflowBehavior.dynamicOverflow] - Overflow items move to a menu
+/// * [CommandBarOverflowBehavior.wrap] - Items wrap to additional lines
+/// * [CommandBarOverflowBehavior.clip] - Items are clipped
 ///
 /// See also:
 ///
-///   * <https://docs.microsoft.com/en-us/windows/apps/design/controls/command-bar>
+///  * [CommandBarCard], a card container for command bars
+///  * [CommandBarButton], a button for use in command bars
+///  * <https://learn.microsoft.com/en-us/windows/apps/design/controls/command-bar>
 class CommandBar extends StatefulWidget {
   /// The [CommandBarItem]s that should appear on the primary area.
   final List<CommandBarItem> primaryItems;
@@ -163,8 +194,8 @@ class CommandBar extends StatefulWidget {
 
   /// Creates a command bar.
   const CommandBar({
-    super.key,
     required this.primaryItems,
+    super.key,
     this.secondaryItems = const [],
     this.overflowItemBuilder,
     this.overflowBehavior = CommandBarOverflowBehavior.dynamicOverflow,
@@ -174,49 +205,62 @@ class CommandBar extends StatefulWidget {
     CrossAxisAlignment? crossAxisAlignment,
     this.overflowItemAlignment = MainAxisAlignment.end,
     this.direction = Axis.horizontal,
-  })  : _isExpanded = overflowBehavior != CommandBarOverflowBehavior.noWrap,
-        isCompact = isCompact ?? direction == Axis.vertical,
-        crossAxisAlignment = crossAxisAlignment ??
-            (direction == Axis.vertical
-                ? CrossAxisAlignment.start
-                : CrossAxisAlignment.center);
+  }) : _isExpanded = overflowBehavior != CommandBarOverflowBehavior.noWrap,
+       isCompact = isCompact ?? direction == Axis.vertical,
+       crossAxisAlignment =
+           crossAxisAlignment ??
+           (direction == Axis.vertical
+               ? CrossAxisAlignment.start
+               : CrossAxisAlignment.center);
 
   @override
   State<CommandBar> createState() => CommandBarState();
 }
 
 class CommandBarState extends State<CommandBar> {
+  /// The controller for the secondary menu popup.
   final secondaryFlyoutController = FlyoutController();
   List<int> _dynamicallyHiddenPrimaryItems = [];
 
+  /// The list of all secondary items, including the dynamically hidden primary
+  /// items.
   List<CommandBarItem> get allSecondaryItems {
     return <CommandBarItem>[
-      ..._dynamicallyHiddenPrimaryItems
-          .map((index) => widget.primaryItems[index]),
+      ..._dynamicallyHiddenPrimaryItems.map(
+        (index) => widget.primaryItems[index],
+      ),
       ...widget.secondaryItems,
     ];
   }
 
+  /// Toggle the secondary menu popup.
+  ///
+  /// If the secondary menu is open, it will be closed.
+  /// If the secondary menu is closed, it will be opened.
+  ///
+  /// This function will return a future that will be completed when the action
+  /// is completed.
   Future<void> toggleSecondaryMenu() async {
     if (secondaryFlyoutController.isOpen) {
-      secondaryFlyoutController.close();
+      secondaryFlyoutController.close<void>();
       if (mounted) setState(() {});
       return;
     }
 
-    final future = secondaryFlyoutController.showFlyout(
+    final future = secondaryFlyoutController.showFlyout<void>(
       buildTarget: true,
       autoModeConfiguration: FlyoutAutoConfiguration(
-        preferredMode: (widget.direction == Axis.horizontal
-                ? FlyoutPlacementMode.bottomRight
-                : FlyoutPlacementMode.rightTop)
-            .resolve(Directionality.of(context)),
+        preferredMode:
+            (widget.direction == Axis.horizontal
+                    ? FlyoutPlacementMode.bottomRight
+                    : FlyoutPlacementMode.rightTop)
+                .resolve(Directionality.of(context)),
       ),
-      additionalOffset: 0.0,
+      additionalOffset: 0,
       builder: (context) {
         return FlyoutContent(
           padding: kDefaultMenuPadding,
-          constraints: const BoxConstraints(maxWidth: 200.0),
+          constraints: const BoxConstraints(maxWidth: 200),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: allSecondaryItems.map((item) {
@@ -232,10 +276,11 @@ class CommandBarState extends State<CommandBar> {
         );
       },
     );
-    // Update the widget to update the tooltip of the default overflow item
+    // Update immediately to show tooltip change
     if (mounted) setState(() {});
 
     await future;
+    // Update after flyout closes to restore visual state
     if (mounted) setState(() {});
   }
 
@@ -283,8 +328,9 @@ class CommandBarState extends State<CommandBar> {
     CommandBarItemDisplayMode primaryMode,
   ) {
     final theme = FluentTheme.of(context);
-    final builtItems =
-        widget.primaryItems.map((item) => item.build(context, primaryMode));
+    final builtItems = widget.primaryItems.map(
+      (item) => item.build(context, primaryMode),
+    );
     Widget? overflowWidget;
 
     if (widget.secondaryItems.isNotEmpty ||
@@ -298,7 +344,7 @@ class CommandBarState extends State<CommandBar> {
           tooltip: secondaryFlyoutController.isOpen
               ? FluentLocalizations.of(context).seeLess
               : FluentLocalizations.of(context).seeMore,
-          icon: const Icon(FluentIcons.more),
+          icon: const WindowsIcon(WindowsIcons.more),
         );
       }
 
@@ -310,8 +356,9 @@ class CommandBarState extends State<CommandBar> {
       overflowWidget = overflowItem.build(context, primaryMode);
     }
 
-    var listBuilder =
-        widget.direction == Axis.horizontal ? Row.new : Column.new;
+    final listBuilder = widget.direction == Axis.horizontal
+        ? Row.new
+        : Column.new;
 
     late Widget w;
     switch (widget.overflowBehavior) {
@@ -323,34 +370,22 @@ class CommandBarState extends State<CommandBar> {
           child: listBuilder.call(
             mainAxisAlignment: widget.mainAxisAlignment,
             crossAxisAlignment: widget.crossAxisAlignment,
-            children: [
-              ...builtItems,
-              if (overflowWidget != null) overflowWidget,
-            ],
+            children: [...builtItems, ?overflowWidget],
           ),
         );
-        break;
       case CommandBarOverflowBehavior.noWrap:
         w = listBuilder.call(
           mainAxisAlignment: widget.mainAxisAlignment,
           crossAxisAlignment: widget.crossAxisAlignment,
-          children: [
-            ...builtItems,
-            if (overflowWidget != null) overflowWidget,
-          ],
+          children: [...builtItems, ?overflowWidget],
         );
-        break;
       case CommandBarOverflowBehavior.wrap:
         w = Wrap(
           direction: widget.direction,
           alignment: _getWrapAlignment(),
           crossAxisAlignment: _getWrapCrossAlignment(),
-          children: [
-            ...builtItems,
-            if (overflowWidget != null) overflowWidget,
-          ],
+          children: [...builtItems, ?overflowWidget],
         );
-        break;
       case CommandBarOverflowBehavior.dynamicOverflow:
         assert(overflowWidget != null);
         w = DynamicOverflow(
@@ -377,7 +412,6 @@ class CommandBarState extends State<CommandBar> {
           },
           children: builtItems.toList(),
         );
-        break;
       case CommandBarOverflowBehavior.clip:
         w = SingleChildScrollView(
           scrollDirection: widget.direction,
@@ -385,27 +419,22 @@ class CommandBarState extends State<CommandBar> {
           child: listBuilder.call(
             mainAxisAlignment: widget.mainAxisAlignment,
             crossAxisAlignment: widget.crossAxisAlignment,
-            children: [
-              ...builtItems,
-              if (overflowWidget != null) overflowWidget,
-            ],
+            children: [...builtItems, ?overflowWidget],
           ),
         ).hideVerticalScrollbar(context);
-        break;
     }
     if (widget._isExpanded) {
       w = listBuilder.call(children: [Expanded(child: w)]);
     }
     w = Container(
-      padding: const EdgeInsets.all(4.0),
+      padding: const EdgeInsetsDirectional.all(4),
       decoration: ShapeDecoration(
         color: secondaryFlyoutController.isOpen
             ? theme.menuColor.withValues(alpha: kMenuColorOpacity)
             : Colors.transparent,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(6.0),
+          borderRadius: BorderRadius.circular(6),
           side: BorderSide(
-            width: 1,
             color: secondaryFlyoutController.isOpen
                 ? theme.inactiveBackgroundColor
                 : Colors.transparent,
@@ -427,27 +456,35 @@ class CommandBarState extends State<CommandBar> {
       final displayMode = (widget.isCompact ?? false)
           ? CommandBarItemDisplayMode.inPrimaryCompact
           : CommandBarItemDisplayMode.inPrimary;
-      return Builder(builder: (context) {
-        return _buildForPrimaryMode(context, displayMode);
-      });
+      return Builder(
+        builder: (context) {
+          return _buildForPrimaryMode(context, displayMode);
+        },
+      );
     } else {
-      return LayoutBuilder(builder: (context, constraints) {
-        if (constraints.maxWidth > widget.compactBreakpointWidth!) {
-          return Builder(builder: (context) {
-            return _buildForPrimaryMode(
-              context,
-              CommandBarItemDisplayMode.inPrimary,
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth > widget.compactBreakpointWidth!) {
+            return Builder(
+              builder: (context) {
+                return _buildForPrimaryMode(
+                  context,
+                  CommandBarItemDisplayMode.inPrimary,
+                );
+              },
             );
-          });
-        } else {
-          return Builder(builder: (context) {
-            return _buildForPrimaryMode(
-              context,
-              CommandBarItemDisplayMode.inPrimaryCompact,
+          } else {
+            return Builder(
+              builder: (context) {
+                return _buildForPrimaryMode(
+                  context,
+                  CommandBarItemDisplayMode.inPrimaryCompact,
+                );
+              },
             );
-          });
-        }
-      });
+          }
+        },
+      );
     }
   }
 }
@@ -475,7 +512,7 @@ enum CommandBarItemDisplayMode {
   ///
   /// Normally you would want to render an item in this visual context as a
   /// [ListTile].
-  inSecondary;
+  inSecondary,
 }
 
 /// An individual control displayed within a [CommandBar]. Sub-class this to
@@ -483,8 +520,12 @@ enum CommandBarItemDisplayMode {
 /// how to build an appropriate widget for the given [CommandBarItemDisplayMode]
 /// during build time.
 abstract class CommandBarItem with Diagnosticable {
+  /// The key of this item.
+  ///
+  /// {@macro flutter.widgets.Widget.key}
   final Key? key;
 
+  /// Creates a command bar item.
   const CommandBarItem({required this.key});
 
   /// Builds the final widget for this display mode for this item.
@@ -496,30 +537,35 @@ abstract class CommandBarItem with Diagnosticable {
 /// Signature of function that can customize the widget returned by
 /// a CommandBarItem built in the given display mode. Can be useful to
 /// wrap the widget in a [Tooltip] etc.
-typedef CommandBarItemWidgetBuilder = Widget Function(
-  BuildContext context,
-  CommandBarItemDisplayMode displayMode,
-  Widget child,
-);
+typedef CommandBarItemWidgetBuilder =
+    Widget Function(
+      BuildContext context,
+      CommandBarItemDisplayMode displayMode,
+      Widget child,
+    );
 
+/// A command bar item that wraps another item with a builder.
 class CommandBarBuilderItem extends CommandBarItem {
   /// Function that is called with the built widget of the wrappedItem for
   /// a given display mode before it is returned. For example, to wrap a
   /// widget in a [Tooltip].
   final CommandBarItemWidgetBuilder builder;
+
+  /// The item to wrapped by the builder.
   final CommandBarItem wrappedItem;
 
+  /// Creates a command bar builder item.
   const CommandBarBuilderItem({
-    super.key,
     required this.builder,
     required this.wrappedItem,
+    super.key,
   });
 
   @override
   Widget build(BuildContext context, CommandBarItemDisplayMode displayMode) {
     // First, build the widget for the wrappedItem in the given displayMode,
     // as it is always passed to the callback
-    var w = wrappedItem.build(context, displayMode);
+    final w = wrappedItem.build(context, displayMode);
     return builder(context, displayMode, w);
   }
 }
@@ -529,17 +575,16 @@ class CommandBarBuilderItem extends CommandBarItem {
 /// the proper margin so the item has the proper minimum height and width
 /// expected of a control within the primary command area of a [CommandBar].
 class CommandBarItemInPrimary extends StatelessWidget {
+  /// The content of this item.
   final Widget child;
 
-  const CommandBarItemInPrimary({
-    super.key,
-    required this.child,
-  });
+  /// Creates a command bar item in primary mode.
+  const CommandBarItemInPrimary({required this.child, super.key});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 3.0),
+      margin: const EdgeInsetsDirectional.symmetric(vertical: 6, horizontal: 3),
       child: child,
     );
   }
@@ -584,12 +629,12 @@ class CommandBarButton extends CommandBarItem {
 
   /// Creates a command bar button
   const CommandBarButton({
+    required this.onPressed,
     super.key,
     this.icon,
     this.label,
     this.subtitle,
     this.trailing,
-    required this.onPressed,
     this.onLongPress,
     this.focusNode,
     this.autofocus = false,
@@ -604,7 +649,8 @@ class CommandBarButton extends CommandBarItem {
       case CommandBarItemDisplayMode.inPrimary:
       case CommandBarItemDisplayMode.inPrimaryCompact:
         final showIcon = icon != null;
-        final showLabel = label != null &&
+        final showLabel =
+            label != null &&
             (displayMode == CommandBarItemDisplayMode.inPrimary || !showIcon);
         final button = IconButton(
           key: key,
@@ -622,21 +668,21 @@ class CommandBarButton extends CommandBarItem {
               );
             }),
           ),
-          icon: Row(mainAxisSize: MainAxisSize.min, children: [
-            if (showIcon)
-              IconTheme.merge(
-                data: const IconThemeData(size: 16.0),
-                child: icon!,
-              ),
-            if (showIcon && showLabel) const SizedBox(width: 10),
-            if (showLabel) label!,
-          ]),
+          icon: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (showIcon)
+                IconTheme.merge(
+                  data: const IconThemeData(size: 16),
+                  child: icon!,
+                ),
+              if (showIcon && showLabel) const SizedBox(width: 10),
+              if (showLabel) label!,
+            ],
+          ),
         );
         if (tooltip != null) {
-          return Tooltip(
-            message: tooltip!,
-            child: button,
-          );
+          return Tooltip(message: tooltip, child: button);
         }
         return button;
       case CommandBarItemDisplayMode.inSecondary:
@@ -647,7 +693,7 @@ class CommandBarButton extends CommandBarItem {
           leading: icon,
           text: label ?? const SizedBox.shrink(),
           trailing: () {
-            if (trailing != null) return trailing!;
+            if (trailing != null) return trailing;
             if (tooltip != null) return Text(tooltip!);
             return null;
           }(),
@@ -668,11 +714,7 @@ class CommandBarButton extends CommandBarItem {
 ///   * [Divider], used to render the separator
 class CommandBarSeparator extends CommandBarItem {
   /// Creates a command bar item separator.
-  const CommandBarSeparator({
-    super.key,
-    this.color,
-    this.thickness,
-  });
+  const CommandBarSeparator({super.key, this.color, this.thickness});
 
   /// Override the color used by the [Divider].
   final Color? color;
@@ -684,8 +726,9 @@ class CommandBarSeparator extends CommandBarItem {
   Widget build(BuildContext context, CommandBarItemDisplayMode displayMode) {
     final parent = context.findAncestorWidgetOfExactType<CommandBar>();
     final parentDirection = parent?.direction ?? Axis.horizontal;
-    final direction =
-        parentDirection == Axis.horizontal ? Axis.vertical : Axis.horizontal;
+    final direction = parentDirection == Axis.horizontal
+        ? Axis.vertical
+        : Axis.horizontal;
     switch (displayMode) {
       case CommandBarItemDisplayMode.inPrimary:
       case CommandBarItemDisplayMode.inPrimaryCompact:
@@ -699,8 +742,8 @@ class CommandBarSeparator extends CommandBarItem {
               direction: direction,
               style: DividerThemeData(
                 thickness: thickness,
-                horizontalMargin: EdgeInsets.zero,
-                verticalMargin: EdgeInsets.zero,
+                horizontalMargin: EdgeInsetsDirectional.zero,
+                verticalMargin: EdgeInsetsDirectional.zero,
                 decoration: color != null ? BoxDecoration(color: color) : null,
               ),
             ),

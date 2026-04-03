@@ -38,20 +38,23 @@ class ColorRingSpectrum extends StatefulWidget {
   /// - [minSaturation]: The minimum allowed saturation value (0-100).
   /// - [maxSaturation]: The maximum allowed saturation value (0-100).
   const ColorRingSpectrum({
-    super.key,
     required this.colorState,
     required this.onColorChanged,
+    super.key,
     this.minHue = 0,
     this.maxHue = 360,
     this.minSaturation = 0,
     this.maxSaturation = 100,
-  })  : assert(minHue >= 0 && minHue <= maxHue && maxHue <= 360,
-            'Hue values must be between 0 and 360'),
-        assert(
-            minSaturation >= 0 &&
-                minSaturation <= maxSaturation &&
-                maxSaturation <= 100,
-            'Saturation values must be between 0 and 100');
+  }) : assert(
+         minHue >= 0 && minHue <= maxHue && maxHue <= 360,
+         'Hue values must be between 0 and 360',
+       ),
+       assert(
+         minSaturation >= 0 &&
+             minSaturation <= maxSaturation &&
+             maxSaturation <= 100,
+         'Saturation values must be between 0 and 100',
+       );
 
   @override
   State<ColorRingSpectrum> createState() => _ColorRingSpectrumState();
@@ -109,26 +112,26 @@ class _ColorRingSpectrumState extends State<ColorRingSpectrum> {
   }
 
   void _updateColorFromWheel(Offset position) {
-    final RenderBox renderBox = context.findRenderObject() as RenderBox;
-    final Size size = renderBox.size;
+    final renderBox = context.findRenderObject()! as RenderBox;
+    final size = renderBox.size;
 
-    final Offset center = Offset(size.width / 2, size.height / 2);
-    final double radius = math.min(size.width, size.height) / 2;
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = math.min(size.width, size.height) / 2;
 
     // Calculate distance from center
-    double x = position.dx - center.dx;
-    double y = position.dy - center.dy;
-    double distance = math.sqrt(x * x + y * y);
+    var x = position.dx - center.dx;
+    var y = position.dy - center.dy;
+    var distance = math.sqrt(x * x + y * y);
 
     // If the point is outside the wheel, bring it back into the circle
     if (distance > radius) {
-      x *= (radius / distance);
-      y *= (radius / distance);
+      x *= radius / distance;
+      y *= radius / distance;
       distance = radius;
     }
 
     // Calculate angle and map it directly to minHue~maxHue range
-    double angle = math.atan2(y, x) * 180 / math.pi;
+    var angle = math.atan2(y, x) * 180 / math.pi;
     angle = (angle + 360) % 360;
 
     // Map the 0-360 angle range to minHue-maxHue range
@@ -136,7 +139,8 @@ class _ColorRingSpectrumState extends State<ColorRingSpectrum> {
 
     // Map the 0-1 distance range to minSaturation-maxSaturation range
     final normalizedDistance = distance / radius;
-    final s = normalizedDistance *
+    final s =
+        normalizedDistance *
             (widget.maxSaturation - widget.minSaturation) /
             100 +
         widget.minSaturation / 100;
@@ -182,20 +186,23 @@ class ColorBoxSpectrum extends StatefulWidget {
   /// - [minSaturation]: The minimum allowed saturation value (0-100).
   /// - [maxSaturation]: The maximum allowed saturation value (0-100).
   const ColorBoxSpectrum({
-    super.key,
     required this.colorState,
     required this.onColorChanged,
+    super.key,
     this.minHue = 0,
     this.maxHue = 360,
     this.minSaturation = 0,
     this.maxSaturation = 100,
-  })  : assert(minHue >= 0 && minHue <= maxHue && maxHue <= 360,
-            'Hue values must be between 0 and 360'),
-        assert(
-            minSaturation >= 0 &&
-                minSaturation <= maxSaturation &&
-                maxSaturation <= 100,
-            'Saturation values must be between 0 and 100');
+  }) : assert(
+         minHue >= 0 && minHue <= maxHue && maxHue <= 360,
+         'Hue values must be between 0 and 360',
+       ),
+       assert(
+         minSaturation >= 0 &&
+             minSaturation <= maxSaturation &&
+             maxSaturation <= 100,
+         'Saturation values must be between 0 and 100',
+       );
 
   @override
   State<ColorBoxSpectrum> createState() => _ColorBoxSpectrumState();
@@ -215,11 +222,9 @@ class _ColorBoxSpectrumState extends State<ColorBoxSpectrum> {
       onPanEnd: _handlePanEnd,
       onTapDown: _handleTapDown,
       onTapUp: _handleTapUp,
-      child: Container(
+      child: DecoratedBox(
         decoration: BoxDecoration(
-          border: Border.all(
-            color: theme.resources.dividerStrokeColorDefault,
-          ),
+          border: Border.all(color: theme.resources.dividerStrokeColorDefault),
           borderRadius: BorderRadius.circular(4),
         ),
         child: CustomPaint(
@@ -261,22 +266,22 @@ class _ColorBoxSpectrumState extends State<ColorBoxSpectrum> {
   }
 
   void _updateColorFromBox(Offset position) {
-    final RenderBox renderBox = context.findRenderObject() as RenderBox;
-    final Size size = renderBox.size;
+    final renderBox = context.findRenderObject()! as RenderBox;
+    final size = renderBox.size;
 
-    final double width = size.width;
-    final double height = size.height;
+    final width = size.width;
+    final height = size.height;
 
     // Clamp position within bounds
-    final double x = position.dx.clamp(0, width);
-    final double y = position.dy.clamp(0, height);
+    final x = position.dx.clamp(0, width);
+    final y = position.dy.clamp(0, height);
 
     // Calculate HSV values
     // Hue from left to right (minHue to maxHue)
-    final double h =
-        widget.minHue + (x / width) * (widget.maxHue - widget.minHue);
+    final h = widget.minHue + (x / width) * (widget.maxHue - widget.minHue);
     // Saturation from top (maxSaturation) to bottom (minSaturation)
-    final double s = widget.maxSaturation / 100 -
+    final s =
+        widget.maxSaturation / 100 -
         (y / height) * (widget.maxSaturation - widget.minSaturation) / 100;
 
     // Note: HSL value is not set in the box spectrum.
@@ -327,14 +332,17 @@ class _RingSpectrumPainter extends CustomPainter {
     this.maxHue = 360,
     this.minSaturation = 0,
     this.maxSaturation = 1,
-  })  : assert(minHue >= 0 && minHue <= maxHue && maxHue <= 360,
-            'Hue values must be between 0 and 360'),
-        assert(
-            minSaturation >= 0 &&
-                minSaturation <= maxSaturation &&
-                maxSaturation <= 100,
-            'Saturation values must be between 0 and 100'),
-        super(repaint: colorState);
+  }) : assert(
+         minHue >= 0 && minHue <= maxHue && maxHue <= 360,
+         'Hue values must be between 0 and 360',
+       ),
+       assert(
+         minSaturation >= 0 &&
+             minSaturation <= maxSaturation &&
+             maxSaturation <= 100,
+         'Saturation values must be between 0 and 100',
+       ),
+       super(repaint: colorState);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -347,12 +355,11 @@ class _RingSpectrumPainter extends CustomPainter {
 
       final mappedHue = minHue + (angle / 360) * (maxHue - minHue);
       final shader = RadialGradient(
-        center: Alignment.center,
-        radius: 1.0,
+        radius: 1,
         stops: const [0.0, 0.5],
         colors: [
-          HSVColor.fromAHSV(1.0, mappedHue, minSaturation / 100, 1.0).toColor(),
-          HSVColor.fromAHSV(1.0, mappedHue, maxSaturation / 100, 1.0).toColor(),
+          HSVColor.fromAHSV(1, mappedHue, minSaturation / 100, 1).toColor(),
+          HSVColor.fromAHSV(1, mappedHue, maxSaturation / 100, 1).toColor(),
         ],
       ).createShader(Rect.fromCircle(center: center, radius: radius));
 
@@ -377,7 +384,7 @@ class _RingSpectrumPainter extends CustomPainter {
     final normalizedSaturation = (maxSaturation == minSaturation)
         ? maxSaturation / 100
         : (colorState.saturation * 100 - minSaturation) /
-            (maxSaturation - minSaturation); // [0..1]
+              (maxSaturation - minSaturation); // [0..1]
 
     final radians = normalizedHue * math.pi / 180.0;
     final distance = normalizedSaturation * radius;
@@ -389,9 +396,14 @@ class _RingSpectrumPainter extends CustomPainter {
     // Draw indicator with current color and border
     // Calculate perceived brightness to determine stroke color
     final rgb = ColorState.hsvToRgb(
-        HsvComponents(colorState.hue, colorState.saturation, 1.0));
-    final fillColor = Color.fromARGB(255, (rgb.r * 255).round(),
-        (rgb.g * 255).round(), (rgb.b * 255).round());
+      HsvComponents(colorState.hue, colorState.saturation, 1),
+    );
+    final fillColor = Color.fromARGB(
+      255,
+      (rgb.r * 255).round(),
+      (rgb.g * 255).round(),
+      (rgb.b * 255).round(),
+    );
 
     // Compute relative luminance to determine optimal stroke color visibility
     final relativeLuminance = ColorState.relativeLuminance(fillColor);
@@ -434,7 +446,7 @@ class _RingSpectrumPainter extends CustomPainter {
   void _drawLabel(Canvas canvas, Size size, String text, Offset position) {
     final backgroundColor = theme.resources.controlSolidFillColorDefault;
     final textColor = theme.resources.textFillColorPrimary;
-    final borderRadius = BorderRadius.circular(4.0);
+    final borderRadius = BorderRadius.circular(4);
     const labelPadding = EdgeInsets.symmetric(horizontal: 8, vertical: 4);
 
     final textSpan = TextSpan(
@@ -452,7 +464,7 @@ class _RingSpectrumPainter extends CustomPainter {
     final labelX = (position.dx - labelWidth / 2)
         .clamp(0, size.width - labelWidth)
         .toDouble();
-    double labelY = (position.dy - labelHeight - 30)
+    var labelY = (position.dy - labelHeight - 30)
         .clamp(0, size.height - labelHeight)
         .toDouble();
 
@@ -482,10 +494,7 @@ class _RingSpectrumPainter extends CustomPainter {
       ),
       Paint()
         ..color = shadow.color
-        ..maskFilter = MaskFilter.blur(
-          BlurStyle.normal,
-          shadow.blurRadius,
-        ),
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, shadow.blurRadius),
     );
 
     // Draw background
@@ -503,10 +512,7 @@ class _RingSpectrumPainter extends CustomPainter {
     // Draw text
     textPainter.paint(
       canvas,
-      Offset(
-        labelX + labelPadding.left,
-        labelY + labelPadding.top,
-      ),
+      Offset(labelX + labelPadding.left, labelY + labelPadding.top),
     );
   }
 }
@@ -552,14 +558,17 @@ class _BoxSpectrumPainter extends CustomPainter {
     this.maxHue = 360,
     this.minSaturation = 0,
     this.maxSaturation = 100,
-  })  : assert(minHue >= 0 && minHue <= maxHue && maxHue <= 360,
-            'Hue values must be between 0 and 360'),
-        assert(
-            minSaturation >= 0 &&
-                minSaturation <= maxSaturation &&
-                maxSaturation <= 100,
-            'Saturation values must be between 0 and 100'),
-        super(repaint: colorState);
+  }) : assert(
+         minHue >= 0 && minHue <= maxHue && maxHue <= 360,
+         'Hue values must be between 0 and 360',
+       ),
+       assert(
+         minSaturation >= 0 &&
+             minSaturation <= maxSaturation &&
+             maxSaturation <= 100,
+         'Saturation values must be between 0 and 100',
+       ),
+       super(repaint: colorState);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -568,32 +577,21 @@ class _BoxSpectrumPainter extends CustomPainter {
     // Draw hue gradient (left to right)
     final colors = List.generate(360, (index) {
       final hue = minHue + (index / 360) * (maxHue - minHue);
-      return HSVColor.fromAHSV(1.0, hue, 1.0, 1.0).toColor();
+      return HSVColor.fromAHSV(1, hue, 1, 1).toColor();
     });
-    final hueGradient = LinearGradient(
-      colors: colors,
-    );
+    final hueGradient = LinearGradient(colors: colors);
 
-    canvas.drawRect(
-      rect,
-      Paint()..shader = hueGradient.createShader(rect),
-    );
+    canvas.drawRect(rect, Paint()..shader = hueGradient.createShader(rect));
 
     // Draw brightness gradient (top to bottom)
     final saturationGradient = LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
       stops: [(1 - maxSaturation / 100), (1 - minSaturation / 100)],
-      colors: const [
-        Colors.transparent,
-        Colors.white,
-      ],
+      colors: const [Colors.transparent, Colors.white],
     );
 
-    canvas.drawRect(
-      rect,
-      Paint()..shader = hueGradient.createShader(rect),
-    );
+    canvas.drawRect(rect, Paint()..shader = hueGradient.createShader(rect));
 
     canvas.drawRect(
       rect,
@@ -603,7 +601,8 @@ class _BoxSpectrumPainter extends CustomPainter {
     // Draw current color indicator
     // Map the current hue and saturation to the box coordinates
     final normalizedHue = (colorState.hue - minHue) / (maxHue - minHue);
-    final normalizedSaturation = (colorState.saturation * 100 - minSaturation) /
+    final normalizedSaturation =
+        (colorState.saturation * 100 - minSaturation) /
         (maxSaturation - minSaturation);
 
     final x = normalizedHue * size.width;
@@ -612,9 +611,14 @@ class _BoxSpectrumPainter extends CustomPainter {
     // Draw indicator with current color and white border
     // Calculate perceived brightness to determine stroke color
     final rgb = ColorState.hsvToRgb(
-        HsvComponents(colorState.hue, colorState.saturation, 1.0));
-    final fillColor = Color.fromARGB(255, (rgb.r * 255).round(),
-        (rgb.g * 255).round(), (rgb.b * 255).round());
+      HsvComponents(colorState.hue, colorState.saturation, 1),
+    );
+    final fillColor = Color.fromARGB(
+      255,
+      (rgb.r * 255).round(),
+      (rgb.g * 255).round(),
+      (rgb.b * 255).round(),
+    );
 
     // Compute relative luminance to determine optimal stroke color visibility
     final relativeLuminance = ColorState.relativeLuminance(fillColor);
@@ -657,7 +661,7 @@ class _BoxSpectrumPainter extends CustomPainter {
   void _drawLabel(Canvas canvas, Size size, String text, Offset position) {
     final backgroundColor = theme.resources.controlSolidFillColorDefault;
     final textColor = theme.resources.textFillColorPrimary;
-    final borderRadius = BorderRadius.circular(4.0);
+    final borderRadius = BorderRadius.circular(4);
     const labelPadding = EdgeInsets.symmetric(horizontal: 8, vertical: 4);
 
     final textSpan = TextSpan(
@@ -675,7 +679,7 @@ class _BoxSpectrumPainter extends CustomPainter {
     final labelX = (position.dx - labelWidth / 2)
         .clamp(0, size.width - labelWidth)
         .toDouble();
-    double labelY = (position.dy - labelHeight - 30)
+    var labelY = (position.dy - labelHeight - 30)
         .clamp(0, size.height - labelHeight)
         .toDouble();
 
@@ -705,10 +709,7 @@ class _BoxSpectrumPainter extends CustomPainter {
       ),
       Paint()
         ..color = shadow.color
-        ..maskFilter = MaskFilter.blur(
-          BlurStyle.normal,
-          shadow.blurRadius,
-        ),
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, shadow.blurRadius),
     );
 
     // Draw background
@@ -726,10 +727,7 @@ class _BoxSpectrumPainter extends CustomPainter {
     // Draw text
     textPainter.paint(
       canvas,
-      Offset(
-        labelX + labelPadding.left,
-        labelY + labelPadding.top,
-      ),
+      Offset(labelX + labelPadding.left, labelY + labelPadding.top),
     );
   }
 }
@@ -741,9 +739,8 @@ class CheckerboardPainter extends CustomPainter {
   /// The theme data for styling
   final FluentThemeData theme;
 
-  const CheckerboardPainter({
-    required this.theme,
-  });
+  /// Creates a checkboard painter.
+  const CheckerboardPainter({required this.theme});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -752,20 +749,25 @@ class CheckerboardPainter extends CustomPainter {
     final width = size.width.toInt();
     final height = size.height.toInt();
 
-    for (int i = 0; i < width; i += squareSize) {
-      for (int j = 0; j < height; j += squareSize) {
+    for (var i = 0; i < width; i += squareSize) {
+      for (var j = 0; j < height; j += squareSize) {
         // Determine if this position should be a dark square
         final isDarkSquare = (i ~/ squareSize + j ~/ squareSize) % 2 != 0;
 
         paint.color = isDarkSquare
-            ? theme.brightness.isDark
-                ? const Color(0x20D8D8D8)
-                : const Color(0x20393939)
+            ? switch (theme.brightness) {
+                Brightness.light => const Color(0x20D8D8D8),
+                Brightness.dark => const Color(0x20393939),
+              }
             : Colors.transparent;
 
         canvas.drawRect(
-          Rect.fromLTWH(i.toDouble(), j.toDouble(), squareSize.toDouble(),
-              squareSize.toDouble()),
+          Rect.fromLTWH(
+            i.toDouble(),
+            j.toDouble(),
+            squareSize.toDouble(),
+            squareSize.toDouble(),
+          ),
           paint,
         );
       }

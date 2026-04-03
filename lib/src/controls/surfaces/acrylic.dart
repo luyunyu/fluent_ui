@@ -6,19 +6,63 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' as m;
 
-const double kBlurAmount = 30.0;
+/// The default blur amount applied to [Acrylic] widgets.
+const double kBlurAmount = 30;
 
+/// The default tint alpha for [Acrylic] widgets.
 const double kDefaultAcrylicAlpha = 0.8;
 
 /// The default opacity of the [FluentThemeData.menuColor]
 const double kMenuColorOpacity = 0.65;
 
-/// Acrylic is a type of Brush that creates a translucent texture.
-/// You can apply acrylic to app surfaces to add depth and help
-/// establish a visual hierarchy.
+/// A translucent material that applies a blur effect to content behind it.
 ///
-/// ![Acrylic Example](https://docs.microsoft.com/en-us/windows/uwp/design/style/images/acrylic_lighttheme_base.png)
+/// Acrylic is a Fluent Design material that creates depth and visual hierarchy
+/// by allowing background content to show through with a blur and tint effect.
+/// It's commonly used for navigation panes, command bars, and other surfaces
+/// that overlay content.
+///
+/// ![Acrylic Example](https://learn.microsoft.com/en-us/windows/apps/design/style/images/acrylic_lighttheme_base.png)
+///
+/// {@tool snippet}
+/// This example shows a basic acrylic surface:
+///
+/// ```dart
+/// Acrylic(
+///   tint: Colors.blue,
+///   tintAlpha: 0.8,
+///   child: Padding(
+///     padding: EdgeInsetsDirectional.all(16),
+///     child: Text('Acrylic content'),
+///   ),
+/// )
+/// ```
+/// {@end-tool}
+///
+/// ## Acrylic recipe
+///
+/// The acrylic effect is created by layering several elements:
+///
+/// 1. **Blur** - Applies a Gaussian blur to background content
+/// 2. **Tint** - A semi-transparent color overlay
+/// 3. **Luminosity** - Adjusts the luminosity of the tinted background
+/// 4. **Noise texture** - Adds subtle visual texture
+///
+/// ## Performance considerations
+///
+/// Acrylic uses [BackdropFilter] which can be expensive. Consider:
+///
+/// * Using [Mica] instead for large surfaces
+/// * Reducing [blurAmount] on lower-end devices
+/// * Avoiding nested acrylic surfaces
+///
+/// See also:
+///
+///  * [Mica], a lighter-weight material effect
+///  * [Card], a surface that doesn't blur background content
+///  * <https://learn.microsoft.com/en-us/windows/apps/design/style/acrylic>
 class Acrylic extends StatefulWidget {
+  /// Creates an acrylic surface.
   const Acrylic({
     super.key,
     this.tint,
@@ -88,6 +132,8 @@ class Acrylic extends StatefulWidget {
 
 class _AcrylicState extends State<Acrylic> {
   AcrylicProperties _properties = const AcrylicProperties.empty();
+  ImageFilter? _cachedBlurFilter;
+  double _cachedBlurAmount = kBlurAmount;
 
   @override
   void initState() {
@@ -126,22 +172,37 @@ class _AcrylicState extends State<Acrylic> {
   }
 
   void _updateProperties() {
+    final blurAmount = widget.blurAmount ?? 30;
     _properties = AcrylicProperties(
       tint: widget.tint ?? FluentTheme.of(context).acrylicBackgroundColor,
       tintAlpha: widget.tintAlpha ?? kDefaultAcrylicAlpha,
       luminosityAlpha: widget.luminosityAlpha ?? kDefaultAcrylicAlpha,
-      blurAmount: widget.blurAmount ?? 30,
+      blurAmount: blurAmount,
       shape: widget.shape ?? const RoundedRectangleBorder(),
     );
+    // Only recreate the filter when blur amount changes
+    if (_cachedBlurFilter == null || _cachedBlurAmount != blurAmount) {
+      _cachedBlurAmount = blurAmount;
+      _cachedBlurFilter = ImageFilter.blur(
+        sigmaX: blurAmount,
+        sigmaY: blurAmount,
+      );
+    }
   }
+
+  ImageFilter get blurFilter =>
+      _cachedBlurFilter ??
+      ImageFilter.blur(sigmaX: _cachedBlurAmount, sigmaY: _cachedBlurAmount);
 
   @override
   Widget build(BuildContext context) {
     assert(debugCheckHasFluentTheme(context));
     assert(widget.elevation >= 0, 'The elevation must be always positive');
     assert(_properties.tintAlpha >= 0, 'The tintAlpha must be always positive');
-    assert(_properties.luminosityAlpha >= 0,
-        'The luminosityAlpha must be always positive');
+    assert(
+      _properties.luminosityAlpha >= 0,
+      'The luminosityAlpha must be always positive',
+    );
 
     final shadowColor =
         widget.shadowColor ?? FluentTheme.of(context).shadowColor;
@@ -177,8 +238,16 @@ class _AcrylicState extends State<Acrylic> {
   }
 }
 
+/// An animated acrylic widget.
+///
+/// See also:
+///
+///  * [Acrylic], the non-animated version of this widget
+///  * [ImplicitlyAnimatedWidget], the base class for this widget
 class AnimatedAcrylic extends ImplicitlyAnimatedWidget {
+  /// Creates an animated acrylic widget.
   const AnimatedAcrylic({
+    required super.duration,
     super.key,
     this.tint,
     this.child,
@@ -189,7 +258,6 @@ class AnimatedAcrylic extends ImplicitlyAnimatedWidget {
     this.shadowColor,
     this.elevation = 0.0,
     super.curve,
-    required super.duration,
   });
 
   /// The tint to apply to the acrylic layers.
@@ -259,25 +327,56 @@ class _AnimatedAcrylicState extends AnimatedWidgetBaseState<AnimatedAcrylic> {
 
   @override
   void forEachTween(TweenVisitor<dynamic> visitor) {
-    _tint = visitor(_tint, widget.tint,
-        (dynamic value) => ColorTween(begin: value as Color)) as ColorTween?;
-    _tintAlpha = visitor(_tintAlpha, widget.tintAlpha,
-            (dynamic value) => Tween<double>(begin: value as double))
-        as Tween<double>?;
-    _luminosityAlpha = visitor(_luminosityAlpha, widget.luminosityAlpha,
-            (dynamic value) => Tween<double>(begin: value as double))
-        as Tween<double>?;
-    _blurAmount = visitor(_blurAmount, widget.blurAmount,
-            (dynamic value) => Tween<double>(begin: value as double))
-        as Tween<double>?;
-    _shape = visitor(_shape, widget.shape,
-            (dynamic value) => m.ShapeBorderTween(begin: value as ShapeBorder))
-        as m.ShapeBorderTween?;
-    _shadowColor = visitor(_shadowColor, widget.shadowColor,
-        (dynamic value) => ColorTween(begin: value as Color)) as ColorTween?;
-    _elevation = visitor(_elevation, widget.elevation,
-            (dynamic value) => Tween<double>(begin: value as double))
-        as Tween<double>?;
+    _tint =
+        visitor(
+              _tint,
+              widget.tint,
+              (dynamic value) => ColorTween(begin: value as Color),
+            )
+            as ColorTween?;
+    _tintAlpha =
+        visitor(
+              _tintAlpha,
+              widget.tintAlpha,
+              (dynamic value) => Tween<double>(begin: value as double),
+            )
+            as Tween<double>?;
+    _luminosityAlpha =
+        visitor(
+              _luminosityAlpha,
+              widget.luminosityAlpha,
+              (dynamic value) => Tween<double>(begin: value as double),
+            )
+            as Tween<double>?;
+    _blurAmount =
+        visitor(
+              _blurAmount,
+              widget.blurAmount,
+              (dynamic value) => Tween<double>(begin: value as double),
+            )
+            as Tween<double>?;
+    _shape =
+        visitor(
+              _shape,
+              widget.shape,
+              (dynamic value) =>
+                  m.ShapeBorderTween(begin: value as ShapeBorder),
+            )
+            as m.ShapeBorderTween?;
+    _shadowColor =
+        visitor(
+              _shadowColor,
+              widget.shadowColor,
+              (dynamic value) => ColorTween(begin: value as Color),
+            )
+            as ColorTween?;
+    _elevation =
+        visitor(
+              _elevation,
+              widget.elevation,
+              (dynamic value) => Tween<double>(begin: value as double),
+            )
+            as Tween<double>?;
   }
 
   @override
@@ -298,12 +397,22 @@ class _AnimatedAcrylicState extends AnimatedWidgetBaseState<AnimatedAcrylic> {
 /// Represents the properties of an Acrylic material
 @immutable
 class AcrylicProperties {
+  /// The tint color of the acrylic.
   final Color tint;
+
+  /// The opacity of the tint color.
   final double tintAlpha;
+
+  /// The opacity of the luminosity color.
   final double luminosityAlpha;
+
+  /// The amount of blur to apply to the content behind the acrylic.
   final double blurAmount;
+
+  /// The shape of the acrylic.
   final ShapeBorder shape;
 
+  /// Creates a new instance of [AcrylicProperties].
   const AcrylicProperties({
     required this.tint,
     required this.tintAlpha,
@@ -312,21 +421,17 @@ class AcrylicProperties {
     required this.shape,
   });
 
+  /// Creates a new instance of [AcrylicProperties] with default values.
   const AcrylicProperties.empty()
-      : tint = Colors.black,
-        tintAlpha = kDefaultAcrylicAlpha,
-        luminosityAlpha = kDefaultAcrylicAlpha,
-        blurAmount = kBlurAmount,
-        shape = const RoundedRectangleBorder();
+    : tint = Colors.black,
+      tintAlpha = kDefaultAcrylicAlpha,
+      luminosityAlpha = kDefaultAcrylicAlpha,
+      blurAmount = kBlurAmount,
+      shape = const RoundedRectangleBorder();
 
   @override
-  int get hashCode => Object.hash(
-        tint,
-        tintAlpha,
-        luminosityAlpha,
-        blurAmount,
-        shape,
-      );
+  int get hashCode =>
+      Object.hash(tint, tintAlpha, luminosityAlpha, blurAmount, shape);
 
   @override
   bool operator ==(Object other) {
@@ -341,6 +446,7 @@ class AcrylicProperties {
     return false;
   }
 
+  /// Gets the properties of the acrylic from the context.
   static AcrylicProperties of(BuildContext context) {
     return context
         .dependOnInheritedWidgetOfExactType<_AcrylicInheritedWidget>()!
@@ -352,10 +458,7 @@ class AcrylicProperties {
 class _AcrylicInheritedWidget extends InheritedWidget {
   final _AcrylicState state;
 
-  const _AcrylicInheritedWidget({
-    required this.state,
-    required super.child,
-  });
+  const _AcrylicInheritedWidget({required this.state, required super.child});
 
   @override
   bool updateShouldNotify(_AcrylicInheritedWidget old) {
@@ -370,7 +473,9 @@ class _AcrylicGuts extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final properties = AcrylicProperties.of(context);
+    final inherited = context
+        .dependOnInheritedWidgetOfExactType<_AcrylicInheritedWidget>()!;
+    final properties = inherited.state._properties;
     final tint = AcrylicHelper.getEffectiveTintColor(
       properties.tint,
       AcrylicHelper.getTintOpacityModifier(properties.tint),
@@ -383,7 +488,7 @@ class _AcrylicGuts extends StatelessWidget {
       child: CustomPaint(
         isComplex: true,
         painter: _AcrylicPainter(
-          tintColor: disabled ? tint.withValues(alpha: 1.0) : tint,
+          tintColor: disabled ? tint.withValues(alpha: 1) : tint,
           luminosityColor: AcrylicHelper.getLuminosityColor(
             tint,
             disabled ? 1.0 : properties.luminosityAlpha,
@@ -392,30 +497,30 @@ class _AcrylicGuts extends StatelessWidget {
         child: disabled
             ? child
             : BackdropFilter(
-                filter: ImageFilter.blur(
-                  sigmaX: properties.blurAmount,
-                  sigmaY: properties.blurAmount,
-                ),
-                child: Stack(fit: StackFit.passthrough, children: [
-                  const Opacity(
-                    opacity: 0.02,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        image: DecorationImage(
-                          image: AssetImage(
-                            'assets/AcrylicNoise.png',
-                            package: 'fluent_ui',
+                filter: inherited.state.blurFilter,
+                child: Stack(
+                  fit: StackFit.passthrough,
+                  children: [
+                    const Opacity(
+                      opacity: 0.02,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: AssetImage(
+                              'assets/AcrylicNoise.png',
+                              package: 'fluent_ui',
+                            ),
+                            alignment: AlignmentDirectional.topStart,
+                            repeat: ImageRepeat.repeat,
                           ),
-                          alignment: AlignmentDirectional.topStart,
-                          repeat: ImageRepeat.repeat,
+                          backgroundBlendMode: BlendMode.srcOver,
+                          color: Colors.transparent,
                         ),
-                        backgroundBlendMode: BlendMode.srcOver,
-                        color: Colors.transparent,
                       ),
                     ),
-                  ),
-                  child,
-                ]),
+                    child,
+                  ],
+                ),
               ),
       ),
     );
@@ -457,12 +562,14 @@ class _AcrylicPainter extends CustomPainter {
 // Credits: @HrX03 (https://github.com/hrx03)
 /// Microsoft utils converted from C# to dart
 class AcrylicHelper {
+  /// Gets the effective tint color of the acrylic.
   static Color getEffectiveTintColor(Color color, double opacity) {
     // Update tintColor's alpha with the combined opacity value
     // If LuminosityOpacity was specified, we don't intervene into users parameters
     return color.withValues(alpha: opacity);
   }
 
+  /// Gets the luminosity color of the acrylic.
   static Color getLuminosityColor(Color tintColor, double? luminosityOpacity) {
     // If luminosity opacity is specified, just use the values as is
     if (luminosityOpacity != null) {
@@ -473,12 +580,12 @@ class AcrylicHelper {
       const minHsvV = 0.125;
       const maxHsvV = 0.965;
 
-      var hsvTintColor = HSVColor.fromColor(tintColor);
+      final hsvTintColor = HSVColor.fromColor(tintColor);
 
-      var clampedHsvV = hsvTintColor.value.clamp(minHsvV, maxHsvV);
+      final clampedHsvV = hsvTintColor.value.clamp(minHsvV, maxHsvV);
 
-      var hsvLuminosityColor = hsvTintColor.withValue(clampedHsvV);
-      var rgbLuminosityColor = hsvLuminosityColor.toColor();
+      final hsvLuminosityColor = hsvTintColor.withValue(clampedHsvV);
+      final rgbLuminosityColor = hsvLuminosityColor.toColor();
 
       // Now figure out luminosity opacity
       // Map original *tint* opacity to this range
@@ -487,16 +594,17 @@ class AcrylicHelper {
 
       const luminosityOpacityRangeMax =
           maxLuminosityOpacity - minLuminosityOpacity;
-      var mappedTintOpacity =
+      final mappedTintOpacity =
           ((tintColor.a / 255.0) * luminosityOpacityRangeMax) +
-              minLuminosityOpacity;
+          minLuminosityOpacity;
 
       return rgbLuminosityColor.withValues(
-        alpha: math.min(mappedTintOpacity, 1.0),
+        alpha: math.min(mappedTintOpacity, 1),
       );
     }
   }
 
+  /// Gets the opacity modifier of the tint color.
   static double getTintOpacityModifier(Color color) {
     // Mid point of HsvV range that these calculations are based on. This is here for easy tuning.
     const midPoint = 0.50;
@@ -505,7 +613,7 @@ class AcrylicHelper {
     const midPointMaxOpacity = 0.90; // 50% luminosity
     const blackMaxOpacity = 0.85; // 0% luminosity
 
-    var hsv = HSVColor.fromColor(color);
+    final hsv = HSVColor.fromColor(color);
 
     var opacityModifier = midPointMaxOpacity;
 
@@ -524,8 +632,8 @@ class AcrylicHelper {
       var maxOpacitySuppression = midPointMaxOpacity - lowestMaxOpacity;
 
       // Determine normalized deviation from the midpoint
-      var deviation = hsv.value - midPoint;
-      var normalizedDeviation = deviation / maxDeviation;
+      final deviation = hsv.value - midPoint;
+      final normalizedDeviation = deviation / maxDeviation;
 
       // If we have saturation, reduce opacity suppression to allow that color to come through more
       if (hsv.saturation > 0) {
@@ -533,7 +641,7 @@ class AcrylicHelper {
         maxOpacitySuppression *= math.max(1 - (hsv.saturation * 2), 0.0);
       }
 
-      var opacitySuppression = maxOpacitySuppression * normalizedDeviation;
+      final opacitySuppression = maxOpacitySuppression * normalizedDeviation;
 
       opacityModifier = midPointMaxOpacity - opacitySuppression;
     }
@@ -557,17 +665,26 @@ class _NoiseTextureCacher {
       package: 'fluent_ui',
     );
 
-    provider.resolve(const ImageConfiguration()).addListener(
-      ImageStreamListener((image, synchronousCall) {
-        texture = image.image;
-      }),
-    );
+    provider
+        .resolve(ImageConfiguration.empty)
+        .addListener(
+          ImageStreamListener((image, synchronousCall) {
+            texture = image.image;
+          }),
+        );
   }
 }
 
+/// A widget that disables the acrylic effect for its descendants.
+///
+/// See also:
+///
+///   * [Acrylic], the widget that applies the acrylic effect
 class DisableAcrylic extends InheritedWidget {
-  const DisableAcrylic({super.key, required super.child});
+  /// Creates a new instance of [DisableAcrylic].
+  const DisableAcrylic({required super.child, super.key});
 
+  /// Gets the nearest [DisableAcrylic] ancestor, if any.
   static DisableAcrylic? of(BuildContext context) {
     return context.dependOnInheritedWidgetOfExactType<DisableAcrylic>();
   }

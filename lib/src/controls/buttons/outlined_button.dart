@@ -1,18 +1,54 @@
 import 'package:fluent_ui/fluent_ui.dart';
 
-/// An outlined button
+/// A button with a visible border outline.
 ///
-/// {@macro fluent_ui.buttons.base}
+/// The [OutlinedButton] has a transparent background with a visible border,
+/// making it suitable for secondary actions that need more visual weight
+/// than a [HyperlinkButton] but less prominence than a [FilledButton].
+///
+/// {@tool snippet}
+/// This example shows a basic outlined button:
+///
+/// ```dart
+/// OutlinedButton(
+///   child: Text('Cancel'),
+///   onPressed: () => Navigator.pop(context),
+/// )
+/// ```
+/// {@end-tool}
+///
+/// {@tool snippet}
+/// This example shows outlined buttons used alongside a filled button:
+///
+/// ```dart
+/// Row(
+///   children: [
+///     OutlinedButton(
+///       child: Text('Previous'),
+///       onPressed: () => goBack(),
+///     ),
+///     SizedBox(width: 8),
+///     FilledButton(
+///       child: Text('Next'),
+///       onPressed: () => goNext(),
+///     ),
+///   ],
+/// )
+/// ```
+/// {@end-tool}
 ///
 /// See also:
 ///
-///   * [FilledButton], a colored button
-///   * [HyperlinkButton], a borderless button with mainly text-based content
+///  * [Button], a standard button with a subtle background
+///  * [FilledButton], an accent-colored button for primary actions
+///  * [HyperlinkButton], a borderless button styled like a hyperlink
+///  * <https://learn.microsoft.com/en-us/windows/apps/design/controls/buttons>
 class OutlinedButton extends BaseButton {
+  /// Creates an outlined button.
   const OutlinedButton({
-    super.key,
     required super.child,
     required super.onPressed,
+    super.key,
     super.onLongPress,
     super.onTapDown,
     super.onTapUp,
@@ -29,15 +65,18 @@ class OutlinedButton extends BaseButton {
 
     return ButtonStyle(
       padding: const WidgetStatePropertyAll(kDefaultButtonPadding),
-      shape: WidgetStatePropertyAll(RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(2.0),
-        side: BorderSide(color: theme.inactiveColor),
-      )),
+      shape: WidgetStatePropertyAll(
+        RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(2),
+          side: BorderSide(color: theme.inactiveColor),
+        ),
+      ),
       foregroundColor: WidgetStatePropertyAll(theme.inactiveColor),
       backgroundColor: WidgetStateProperty.resolveWith((states) {
         if (states.isDisabled) {
-          return theme.resources.controlFillColorDisabled
-              .withValues(alpha: 0.30);
+          return theme.resources.controlFillColorDisabled.withValues(
+            alpha: 0.30,
+          );
         } else if (states.isPressed) {
           return theme.inactiveColor.withValues(alpha: 0.25);
         } else if (states.isHovered) {
@@ -46,11 +85,13 @@ class OutlinedButton extends BaseButton {
           return Colors.transparent;
         }
       }),
-      textStyle: const WidgetStatePropertyAll(TextStyle(
-        fontSize: 13.0,
-        fontWeight: FontWeight.w600,
-        letterSpacing: 0.5,
-      )),
+      textStyle: const WidgetStatePropertyAll(
+        TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.5,
+        ),
+      ),
     );
   }
 

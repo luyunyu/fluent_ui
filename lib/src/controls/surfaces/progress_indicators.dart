@@ -3,23 +3,47 @@ import 'dart:math' as math;
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/foundation.dart';
 
-const double _kMinProgressRingIndicatorSize = 36.0;
-const double _kMinProgressBarWidth = 130.0;
+const double _kMinProgressRingIndicatorSize = 36;
+const double _kMinProgressBarWidth = 130;
 
-/// A progress control provides feedback to the user that a long-running
-/// operation is underway. It can mean that the user cannot interact with the
-/// app when the progress indicator is visible, and can also indicate how long
-/// the wait time might be.
+/// A linear progress indicator that shows operation progress.
 ///
-/// It can be determinate or indeterminate:
+/// Progress bars provide visual feedback about ongoing operations, helping
+/// users understand that the app is working and approximately how long they
+/// might need to wait.
 ///
-/// ![Determinate Progress Bar](https://docs.microsoft.com/en-us/windows/uwp/design/controls-and-patterns/images/progressbar-determinate.png)
-/// ![Indeterminate Progress Bar](https://docs.microsoft.com/en-us/windows/uwp/design/controls-and-patterns/images/progressbar-indeterminate.gif)
+/// The progress bar can operate in two modes:
+///
+/// * **Determinate** - Shows specific progress from 0-100%. Use when you can
+///   measure or estimate the operation's progress.
+///
+/// ![Determinate Progress Bar](https://learn.microsoft.com/en-us/windows/apps/design/controls/images/progressbar-determinate.png)
+///
+/// * **Indeterminate** - Shows an animation without specific progress. Use when
+///   the operation duration is unknown.
+///
+/// ![Indeterminate Progress Bar](https://learn.microsoft.com/en-us/windows/apps/design/controls/images/progressbar-indeterminate.gif)
+///
+/// {@tool snippet}
+/// This example shows a determinate progress bar:
+///
+/// ```dart
+/// ProgressBar(value: 75)
+/// ```
+/// {@end-tool}
+///
+/// {@tool snippet}
+/// This example shows an indeterminate progress bar:
+///
+/// ```dart
+/// ProgressBar()
+/// ```
+/// {@end-tool}
 ///
 /// See also:
 ///
-///   * <https://learn.microsoft.com/en-us/windows/apps/design/controls/progress-controls#progressbar>
-///   * [ProgressRing], a progress widget that shows progress in a ring.
+///  * [ProgressRing], a circular progress indicator
+///  * <https://learn.microsoft.com/en-us/windows/apps/design/controls/progress-controls>
 class ProgressBar extends StatefulWidget {
   /// Creates a new progress bar.
   ///
@@ -33,8 +57,8 @@ class ProgressBar extends StatefulWidget {
     this.semanticLabel,
     this.backgroundColor,
     this.activeColor,
-  })  : assert(value == null || value >= 0 && value <= 100),
-        assert(strokeWidth >= 0);
+  }) : assert(value == null || value >= 0 && value <= 100),
+       assert(strokeWidth >= 0);
 
   /// The current value of the indicator. If non-null, a determinate progress
   /// bar is created:
@@ -104,14 +128,19 @@ class _ProgressBarState extends State<ProgressBar>
     super.dispose();
   }
 
-  double p1 = 0, p2 = 0;
-  double idleFrames = 15, cycle = 1, idle = 1;
+  double p1 = 0;
+  double p2 = 0;
+  double idleFrames = 15;
+  double cycle = 1;
+  double idle = 1;
   double lastValue = 0;
 
   @override
   Widget build(BuildContext context) {
     assert(debugCheckHasFluentTheme(context));
+    assert(debugCheckHasDirectionality(context));
     final theme = FluentTheme.of(context);
+    final direction = Directionality.of(context);
     return Container(
       height: widget.strokeWidth,
       constraints: const BoxConstraints(minWidth: _kMinProgressBarWidth),
@@ -129,10 +158,12 @@ class _ProgressBarState extends State<ProgressBar>
               painter: _ProgressBarPainter(
                 value: widget.value == null ? null : widget.value! / 100,
                 strokeWidth: widget.strokeWidth,
-                activeColor: widget.activeColor ??
+                activeColor:
+                    widget.activeColor ??
                     theme.accentColor.defaultBrushFor(theme.brightness),
                 backgroundColor:
                     widget.backgroundColor ?? theme.inactiveBackgroundColor,
+                textDirection: direction,
                 p1: p1,
                 p2: p2,
                 idleFrames: idleFrames,
@@ -156,17 +187,25 @@ class _ProgressBarState extends State<ProgressBar>
 }
 
 class _ProgressBarPainter extends CustomPainter {
-  static const _step1 = 2.7, _step2 = 4.5, _velocityScale = 0.8;
+  static const _step1 = 2.7;
+  static const _step2 = 4.5;
+  static const _velocityScale = 0.8;
   static const _short = 0.4; // percentage of short line (0..1)
   static const _long = 80 / 130; // percentage of long line (0..1)
 
-  double p1, p2, idleFrames, cycle, idle, deltaValue;
+  double p1;
+  double p2;
+  double idleFrames;
+  double cycle;
+  double idle;
+  double deltaValue;
 
   final ValueChanged<List<double>> onUpdate;
 
   final double strokeWidth;
   final Color backgroundColor;
   final Color activeColor;
+  final TextDirection textDirection;
 
   final double? value;
 
@@ -181,11 +220,17 @@ class _ProgressBarPainter extends CustomPainter {
     required this.strokeWidth,
     required this.backgroundColor,
     required this.activeColor,
+    required this.textDirection,
     required this.value,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
+    if (textDirection == TextDirection.rtl) {
+      canvas.translate(size.width, 0);
+      canvas.scale(-1, 1);
+    }
+
     size = Size(size.width - strokeWidth / 2, size.height - strokeWidth / 2);
 
     void drawLine(Offset xy1, Offset xy2, Color color) {
@@ -230,10 +275,7 @@ class _ProgressBarPainter extends CustomPainter {
     }
 
     Offset coords(double percentage) {
-      return Offset(
-        size.width * percentage,
-        size.height,
-      );
+      return Offset(size.width * percentage, size.height);
     }
 
     double calcVelocity(double p) {
@@ -273,19 +315,44 @@ class _ProgressBarPainter extends CustomPainter {
   bool shouldRebuildSemantics(_ProgressBarPainter oldDelegate) => false;
 }
 
-/// A progress control provides feedback to the user that a long-running
-/// operation is underway. It can mean that the user cannot interact with the
-/// app when the progress indicator is visible, and can also indicate how long
-/// the wait time might be.
+/// A circular progress indicator that shows operation progress.
 ///
-/// It can be determinate or indeterminate.
+/// Progress rings provide visual feedback about ongoing operations in a
+/// compact, circular format. They're especially useful when horizontal space
+/// is limited or when you need a loading indicator.
+///
+/// The progress ring can operate in two modes:
+///
+/// * **Determinate** - Shows specific progress from 0-100%. Use when you can
+///   measure the operation's progress.
+///
 /// ![Determinate Progress Ring](https://learn.microsoft.com/en-us/windows/apps/design/controls/images/progress-ring.jpg)
+///
+/// * **Indeterminate** - Shows a spinning animation. Use when the operation
+///   duration is unknown.
+///
 /// ![Indeterminate Progress Ring](https://learn.microsoft.com/en-us/windows/apps/design/controls/images/progressring-indeterminate.gif)
+///
+/// {@tool snippet}
+/// This example shows an indeterminate progress ring:
+///
+/// ```dart
+/// ProgressRing()
+/// ```
+/// {@end-tool}
+///
+/// {@tool snippet}
+/// This example shows a determinate progress ring:
+///
+/// ```dart
+/// ProgressRing(value: 65)
+/// ```
+/// {@end-tool}
 ///
 /// See also:
 ///
-///   * <https://learn.microsoft.com/en-us/windows/apps/design/controls/progress-controls#progressring>
-///   * [ProgressBar], a progress widget that shows progress in a horizontal bar.
+///  * [ProgressBar], a linear progress indicator
+///  * <https://learn.microsoft.com/en-us/windows/apps/design/controls/progress-controls>
 class ProgressRing extends StatefulWidget {
   /// Creates progress ring.
   ///
@@ -345,48 +412,26 @@ class ProgressRing extends StatefulWidget {
       ..add(DoubleProperty('strokeWidth', strokeWidth, defaultValue: 4.5))
       ..add(ColorProperty('backgroundColor', backgroundColor))
       ..add(ColorProperty('activeColor', activeColor))
-      ..add(FlagProperty(
-        'backwards',
-        value: backwards,
-        defaultValue: false,
-        ifFalse: 'forwards',
-      ));
+      ..add(
+        FlagProperty(
+          'backwards',
+          value: backwards,
+          defaultValue: false,
+          ifFalse: 'forwards',
+        ),
+      );
   }
 }
 
 class _ProgressRingState extends State<ProgressRing>
     with SingleTickerProviderStateMixin {
   static final TweenSequence<double> _startAngleTween = TweenSequence([
-    TweenSequenceItem(
-      tween: Tween<double>(
-        begin: 0,
-        end: 450,
-      ),
-      weight: 1,
-    ),
-    TweenSequenceItem(
-      tween: Tween<double>(
-        begin: 450,
-        end: 1080,
-      ),
-      weight: 1,
-    ),
+    TweenSequenceItem(tween: Tween<double>(begin: 0, end: 450), weight: 1),
+    TweenSequenceItem(tween: Tween<double>(begin: 450, end: 1080), weight: 1),
   ]);
   static final TweenSequence<double> _sweepAngleTween = TweenSequence([
-    TweenSequenceItem(
-      tween: Tween<double>(
-        begin: 0,
-        end: 180,
-      ),
-      weight: 1,
-    ),
-    TweenSequenceItem(
-      tween: Tween<double>(
-        begin: 180,
-        end: 0,
-      ),
-      weight: 1,
-    ),
+    TweenSequenceItem(tween: Tween<double>(begin: 0, end: 180), weight: 1),
+    TweenSequenceItem(tween: Tween<double>(begin: 180, end: 0), weight: 1),
   ]);
 
   late final AnimationController _controller;
@@ -437,7 +482,8 @@ class _ProgressRingState extends State<ProgressRing>
                 backgroundColor:
                     widget.backgroundColor ?? theme.inactiveBackgroundColor,
                 value: widget.value,
-                color: widget.activeColor ??
+                color:
+                    widget.activeColor ??
                     theme.accentColor.defaultBrushFor(theme.brightness),
                 strokeWidth: widget.strokeWidth,
                 startAngle: _startAngleTween.evaluate(_controller),
@@ -457,7 +503,8 @@ class _RingPainter extends CustomPainter {
   final Color backgroundColor;
   final double strokeWidth;
   final double? value;
-  final double startAngle, sweepAngle;
+  final double startAngle;
+  final double sweepAngle;
   final bool backwards;
 
   const _RingPainter({

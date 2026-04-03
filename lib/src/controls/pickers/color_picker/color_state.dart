@@ -2,29 +2,50 @@ import 'dart:math' as math;
 
 import 'package:fluent_ui/fluent_ui.dart';
 
-part "color_names.dart";
+part 'color_names.dart';
 
 /// Represents components of a color in the HSV (Hue, Saturation, Value) color space.
 final class HsvComponents {
+  /// Creates a HSV components.
   const HsvComponents(this.h, this.s, this.v);
+
+  /// The hue component (0-360).
   final double h;
+
+  /// The saturation component (0-1).
   final double s;
+
+  /// The value component (0-1).
   final double v;
 }
 
 /// Represents components of a color in the HSL (Hue, Saturation, Lightness) color space.
 final class HslComponents {
+  /// Creates a HSL components.
   const HslComponents(this.h, this.s, this.l);
+
+  /// The hue component (0-360).
   final double h;
+
+  /// The saturation component (0-1).
   final double s;
+
+  /// The lightness component (0-1).
   final double l;
 }
 
 /// Represents components of a color in the RGB (Red, Green, Blue) color space.
 final class RgbComponents {
+  /// Creates a RGB components.
   const RgbComponents(this.r, this.g, this.b);
+
+  /// The red component (0-1).
   final double r;
+
+  /// The green component (0-1).
   final double g;
+
+  /// The blue component (0-1).
   final double b;
 }
 
@@ -67,17 +88,24 @@ class ColorState extends ChangeNotifier {
   /// All components must be within their valid ranges:
   /// - [red], [green], [blue], [alpha], [saturation], [value]: 0–1
   /// - [hue]: 0–360
-  ColorState(this._red, this._green, this._blue, this._alpha, this._hue,
-      this._saturation, this._value) {
+  ColorState(
+    this._red,
+    this._green,
+    this._blue,
+    this._alpha,
+    this._hue,
+    this._saturation,
+    this._value,
+  ) {
     _validateColorValues();
   }
 
   /// Creates a [ColorState] from a [Color].
   static ColorState fromColor(Color color) {
-    final r = color.r.toDouble();
-    final g = color.g.toDouble();
-    final b = color.b.toDouble();
-    final a = color.a.toDouble();
+    final r = color.r;
+    final g = color.g;
+    final b = color.b;
+    final a = color.a;
 
     final hsv = rgbToHsv(RgbComponents(r, g, b));
     return ColorState(r, g, b, a, hsv.h, hsv.s, hsv.v);
@@ -187,8 +215,8 @@ class ColorState extends ChangeNotifier {
       final rgb1 = RgbComponents(_red, _green, _blue);
       final hsl1 = rgbToHsl(rgb1);
 
-      double minDistance = double.infinity;
-      String closestColorName = '';
+      var minDistance = double.infinity;
+      var closestColorName = '';
 
       for (final entry in _ColorNames._values.entries) {
         final hexColor = entry.key;
@@ -219,8 +247,10 @@ class ColorState extends ChangeNotifier {
   ///
   /// If [includeAlpha] is true, the alpha channel will be included in the string.
   String toHexString(bool includeAlpha) {
-    final colorValue =
-        toColor().colorValue.toRadixString(16).padLeft(8, '0').toUpperCase();
+    final colorValue = toColor().colorValue
+        .toRadixString(16)
+        .padLeft(8, '0')
+        .toUpperCase();
     return includeAlpha ? '#$colorValue' : '#${colorValue.substring(2)}';
   }
 
@@ -240,20 +270,27 @@ class ColorState extends ChangeNotifier {
     int minValue = 0,
     int maxValue = 100,
   }) {
-    assert(minHue >= 0 && minHue <= maxHue && maxHue <= 360,
-        'Hue values must be between 0 and 360');
     assert(
-        minSaturation >= 0 &&
-            minSaturation <= maxSaturation &&
-            maxSaturation <= 100,
-        'Saturation values must be between 0 and 100');
-    assert(minValue >= 0 && minValue <= maxValue && maxValue <= 100,
-        'Value/brightness values must be between 0 and 100');
+      minHue >= 0 && minHue <= maxHue && maxHue <= 360,
+      'Hue values must be between 0 and 360',
+    );
+    assert(
+      minSaturation >= 0 &&
+          minSaturation <= maxSaturation &&
+          maxSaturation <= 100,
+      'Saturation values must be between 0 and 100',
+    );
+    assert(
+      minValue >= 0 && minValue <= maxValue && maxValue <= 100,
+      'Value/brightness values must be between 0 and 100',
+    );
 
     // Clamp values to allowed ranges
     final clampedHue = _hue.clamp(minHue.toDouble(), maxHue.toDouble());
-    final clampedSaturation =
-        _saturation.clamp(minSaturation / 100, maxSaturation / 100);
+    final clampedSaturation = _saturation.clamp(
+      minSaturation / 100,
+      maxSaturation / 100,
+    );
     final clampedValue = _value.clamp(minValue / 100, maxValue / 100);
 
     // Only update and recalculate if values actually changed
@@ -297,14 +334,16 @@ class ColorState extends ChangeNotifier {
 
   /// Validates that all color values are within their valid ranges.
   void _validateColorValues() {
-    assert(_red >= 0 && _red <= 1, "Red must be between 0 and 1");
-    assert(_green >= 0 && _green <= 1, "Green must be between 0 and 1");
-    assert(_blue >= 0 && _blue <= 1, "Blue must be between 0 and 1");
-    assert(_alpha >= 0 && _alpha <= 1, "Alpha must be between 0 and 1");
-    assert(_hue >= 0 && _hue <= 360, "Hue must be between 0 and 360");
-    assert(_saturation >= 0 && _saturation <= 1,
-        "Saturation must be between 0 and 1");
-    assert(_value >= 0 && _value <= 1, "Value must be between 0 and 1");
+    assert(_red >= 0 && _red <= 1, 'Red must be between 0 and 1');
+    assert(_green >= 0 && _green <= 1, 'Green must be between 0 and 1');
+    assert(_blue >= 0 && _blue <= 1, 'Blue must be between 0 and 1');
+    assert(_alpha >= 0 && _alpha <= 1, 'Alpha must be between 0 and 1');
+    assert(_hue >= 0 && _hue <= 360, 'Hue must be between 0 and 360');
+    assert(
+      _saturation >= 0 && _saturation <= 1,
+      'Saturation must be between 0 and 1',
+    );
+    assert(_value >= 0 && _value <= 1, 'Value must be between 0 and 1');
   }
 
   /// Creates a copy of this [ColorState] but with the given fields replaced with the new values.
@@ -317,7 +356,7 @@ class ColorState extends ChangeNotifier {
     double? saturation,
     double? value,
   }) {
-    ColorState cs = ColorState(
+    final cs = ColorState(
       _red,
       _green,
       _blue,
@@ -452,8 +491,9 @@ class ColorState extends ChangeNotifier {
       return RgbComponents(hsl.l, hsl.l, hsl.l); // achromatic (grey)
     }
 
-    final q =
-        hsl.l < 0.5 ? hsl.l * (1.0 + hsl.s) : hsl.l + hsl.s - hsl.l * hsl.s;
+    final q = hsl.l < 0.5
+        ? hsl.l * (1.0 + hsl.s)
+        : hsl.l + hsl.s - hsl.l * hsl.s;
     final p = 2.0 * hsl.l - q;
     final r = _hueToRgb(p, q, hsl.h + 1.0 / 3.0);
     final g = _hueToRgb(p, q, hsl.h);
@@ -526,20 +566,26 @@ class ColorState extends ChangeNotifier {
   }
 
   /// Distance calculation between two colors in RGB and HSL spaces.
-  static double _rgbHslDistance(RgbComponents rgb1, HslComponents hsl1,
-      RgbComponents rgb2, HslComponents hsl2) {
+  static double _rgbHslDistance(
+    RgbComponents rgb1,
+    HslComponents hsl1,
+    RgbComponents rgb2,
+    HslComponents hsl2,
+  ) {
     final (r1, g1, b1) = (rgb1.r, rgb1.g, rgb1.b);
     final (h1, s1, l1) = (hsl1.h, hsl1.s, hsl1.l);
     final (r2, g2, b2) = (rgb2.r, rgb2.g, rgb2.b);
     final (h2, s2, l2) = (hsl2.h, hsl2.s, hsl2.l);
 
     // RGB distance = (R1 - R2)^2 + (G1 - G2)^2 + (B1 - B2)^2
-    final rgbDiff = math.pow((r1 - r2) * 255, 2) +
+    final rgbDiff =
+        math.pow((r1 - r2) * 255, 2) +
         math.pow((g1 - g2) * 255, 2) +
         math.pow((b1 - b2) * 255, 2);
 
     // HSL distance = ((H1 - H2)/360)^2 + (S1 - S2)^2 + (L1 - L2)^2
-    final hslDiff = math.pow((h1 - h2) / 360, 2) +
+    final hslDiff =
+        math.pow((h1 - h2) / 360, 2) +
         math.pow(s1 - s2, 2) +
         math.pow(l1 - l2, 2);
 
@@ -558,7 +604,7 @@ class ColorState extends ChangeNotifier {
     final r = _standardToLinear(color.r);
     final g = _standardToLinear(color.g);
     final b = _standardToLinear(color.b);
-    return (r * 0.2126 + g * 0.7152 + b * 0.0722);
+    return r * 0.2126 + g * 0.7152 + b * 0.0722;
   }
 
   /// Converts a standard RGB color component to linear RGB color space.

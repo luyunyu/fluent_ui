@@ -39,6 +39,7 @@ import 'fluent_localizations_ta.dart';
 import 'fluent_localizations_th.dart';
 import 'fluent_localizations_tl.dart';
 import 'fluent_localizations_tr.dart';
+import 'fluent_localizations_ug.dart';
 import 'fluent_localizations_uk.dart';
 import 'fluent_localizations_ur.dart';
 import 'fluent_localizations_uz.dart';
@@ -100,7 +101,7 @@ import 'fluent_localizations_zh.dart';
 /// property.
 abstract class FluentLocalizations {
   FluentLocalizations(String locale)
-      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -123,11 +124,11 @@ abstract class FluentLocalizations {
   /// of delegates is preferred or required.
   static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
       <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
@@ -165,12 +166,13 @@ abstract class FluentLocalizations {
     Locale('th'),
     Locale('tl'),
     Locale('tr'),
+    Locale('ug'),
     Locale('uk'),
     Locale('ur'),
     Locale('uz'),
     Locale('vi'),
     Locale('zh'),
-    Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant')
+    Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
   ];
 
   /// The tooltip for the back button on [NavigationAppBar].
@@ -370,6 +372,12 @@ abstract class FluentLocalizations {
   /// In en, this message translates to:
   /// **'year'**
   String get year;
+
+  /// The text used by [CalendarDatePicker] to prompt the user to pick a date.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a date'**
+  String get pickADate;
 
   /// The text used by [CommandBar] to show more items.
   ///
@@ -1285,51 +1293,53 @@ class _FluentLocalizationsDelegate
   @override
   Future<FluentLocalizations> load(Locale locale) {
     return SynchronousFuture<FluentLocalizations>(
-        lookupFluentLocalizations(locale));
+      lookupFluentLocalizations(locale),
+    );
   }
 
   @override
   bool isSupported(Locale locale) => <String>[
-        'ar',
-        'be',
-        'bn',
-        'ca',
-        'cs',
-        'de',
-        'el',
-        'en',
-        'es',
-        'fa',
-        'fr',
-        'he',
-        'hi',
-        'hr',
-        'hu',
-        'id',
-        'it',
-        'ja',
-        'ko',
-        'ku',
-        'ms',
-        'my',
-        'ne',
-        'nl',
-        'pl',
-        'pt',
-        'ro',
-        'ru',
-        'sk',
-        'sv',
-        'ta',
-        'th',
-        'tl',
-        'tr',
-        'uk',
-        'ur',
-        'uz',
-        'vi',
-        'zh'
-      ].contains(locale.languageCode);
+    'ar',
+    'be',
+    'bn',
+    'ca',
+    'cs',
+    'de',
+    'el',
+    'en',
+    'es',
+    'fa',
+    'fr',
+    'he',
+    'hi',
+    'hr',
+    'hu',
+    'id',
+    'it',
+    'ja',
+    'ko',
+    'ku',
+    'ms',
+    'my',
+    'ne',
+    'nl',
+    'pl',
+    'pt',
+    'ro',
+    'ru',
+    'sk',
+    'sv',
+    'ta',
+    'th',
+    'tl',
+    'tr',
+    'ug',
+    'uk',
+    'ur',
+    'uz',
+    'vi',
+    'zh',
+  ].contains(locale.languageCode);
 
   @override
   bool shouldReload(_FluentLocalizationsDelegate old) => false;
@@ -1418,6 +1428,8 @@ FluentLocalizations lookupFluentLocalizations(Locale locale) {
       return FluentLocalizationsTl();
     case 'tr':
       return FluentLocalizationsTr();
+    case 'ug':
+      return FluentLocalizationsUg();
     case 'uk':
       return FluentLocalizationsUk();
     case 'ur':
@@ -1431,8 +1443,9 @@ FluentLocalizations lookupFluentLocalizations(Locale locale) {
   }
 
   throw FlutterError(
-      'FluentLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-      'an issue with the localizations generation tool. Please file an issue '
-      'on GitHub with a reproducible sample app and the gen-l10n configuration '
-      'that was used.');
+    'FluentLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+    'an issue with the localizations generation tool. Please file an issue '
+    'on GitHub with a reproducible sample app and the gen-l10n configuration '
+    'that was used.',
+  );
 }

@@ -1,30 +1,40 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/rendering.dart';
 
+/// The default height of a one-line list tile.
 const kOneLineTileHeight = 40.0;
 
+/// The default padding of a list tile.
 const kDefaultListTilePadding = EdgeInsetsDirectional.only(
-  end: 12.0,
-  top: 6.0,
-  bottom: 6.0,
+  end: 12,
+  top: 6,
+  bottom: 6,
 );
 
+/// The default shape of a list tile.
 const kDefaultListTileShape = RoundedRectangleBorder(
-  borderRadius: BorderRadius.all(Radius.circular(4.0)),
+  borderRadius: BorderRadius.all(Radius.circular(4)),
 );
 
+/// The default margin of a list tile.
 const kDefaultListTileMargin = EdgeInsetsDirectional.symmetric(
-  horizontal: 4.0,
-  vertical: 2.0,
+  horizontal: 4,
+  vertical: 2,
 );
 
+/// The selection mode of a list tile.
 enum ListTileSelectionMode {
+  /// The list tile is not selectable.
   none,
+
+  /// Only one item can be selected at a time.
   single,
+
+  /// Multiple items can be selected at a time.
   multiple,
 }
 
-/// A fluent-styled list tile.
+/// A windows-styled list tile.
 ///
 /// ![ListViewItem inside a ListView](https://docs.microsoft.com/en-us/windows/apps/design/controls/images/listview-grouped-example-resized-final.png)
 ///
@@ -33,7 +43,7 @@ enum ListTileSelectionMode {
 ///  * [ListView], a scrollable list of widgets arranged linearly.
 ///  * <https://docs.microsoft.com/en-us/windows/apps/design/controls/item-templates-listview>
 class ListTile extends StatelessWidget {
-  /// A fluent-styled list tile
+  /// A windows-styled list tile
   const ListTile({
     super.key,
     this.tileColor,
@@ -50,13 +60,13 @@ class ListTile extends StatelessWidget {
     this.contentAlignment = CrossAxisAlignment.center,
     this.contentPadding = kDefaultListTilePadding,
     this.margin = kDefaultListTileMargin,
-  })  : assert(
-          subtitle != null ? title != null : true,
-          'To have a subtitle, there must be a title',
-        ),
-        selected = false,
-        selectionMode = ListTileSelectionMode.none,
-        onSelectionChange = null;
+  }) : assert(
+         !(subtitle != null) || title != null,
+         'To have a subtitle, there must be a title',
+       ),
+       selected = false,
+       selectionMode = ListTileSelectionMode.none,
+       onSelectionChange = null;
 
   /// A selectable list tile.
   const ListTile.selectable({
@@ -79,14 +89,14 @@ class ListTile extends StatelessWidget {
     this.contentPadding = kDefaultListTilePadding,
     this.margin = kDefaultListTileMargin,
   }) : assert(
-          subtitle != null ? title != null : true,
-          'To have a subtitle, there must be a title',
-        );
+         !(subtitle != null) || title != null,
+         'To have a subtitle, there must be a title',
+       );
 
   /// The background color of the button.
   ///
   /// If null, [ButtonThemeData.uncheckedInputColor] is used by default
-  final WidgetStateProperty<Color>? tileColor;
+  final WidgetStateColor? tileColor;
 
   /// The tile shape.
   ///
@@ -184,53 +194,65 @@ class ListTile extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(DiagnosticsProperty<ShapeBorder>(
-        'shape',
-        shape,
-        defaultValue: kDefaultListTileShape,
-      ))
-      ..add(FlagProperty(
-        'selected',
-        value: selected,
-        ifFalse: 'unselected',
-        defaultValue: false,
-      ))
-      ..add(EnumProperty(
-        'selectionMode',
-        selectionMode,
-        defaultValue: ListTileSelectionMode.none,
-      ))
-      ..add(FlagProperty(
-        'enabled',
-        value: onPressed != null || onSelectionChange != null,
-        defaultValue: false,
-        ifFalse: 'disabled',
-      ))
-      ..add(EnumProperty<CrossAxisAlignment>(
-        'contentAlignment',
-        contentAlignment,
-        defaultValue: CrossAxisAlignment.center,
-      ))
-      ..add(DiagnosticsProperty<EdgeInsetsGeometry>(
-        'contentPadding',
-        contentPadding,
-        defaultValue: kDefaultListTilePadding,
-      ))
-      ..add(DiagnosticsProperty<EdgeInsetsGeometry?>(
-        'margin',
-        margin,
-        defaultValue: kDefaultListTileMargin,
-      ));
+      ..add(
+        DiagnosticsProperty<ShapeBorder>(
+          'shape',
+          shape,
+          defaultValue: kDefaultListTileShape,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'selected',
+          value: selected,
+          ifFalse: 'unselected',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        EnumProperty(
+          'selectionMode',
+          selectionMode,
+          defaultValue: ListTileSelectionMode.none,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'enabled',
+          value: onPressed != null || onSelectionChange != null,
+          defaultValue: false,
+          ifFalse: 'disabled',
+        ),
+      )
+      ..add(
+        EnumProperty<CrossAxisAlignment>(
+          'contentAlignment',
+          contentAlignment,
+          defaultValue: CrossAxisAlignment.center,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'contentPadding',
+          contentPadding,
+          defaultValue: kDefaultListTilePadding,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry?>(
+          'margin',
+          margin,
+          defaultValue: kDefaultListTileMargin,
+        ),
+      );
   }
 
   void _onSelectionChange() {
     switch (selectionMode) {
       case ListTileSelectionMode.multiple:
         onSelectionChange!(!selected);
-        break;
       case ListTileSelectionMode.single:
         if (!selected) onSelectionChange!(true);
-        break;
       default:
         break;
     }
@@ -263,7 +285,7 @@ class ListTile extends StatelessWidget {
           );
         }();
 
-        const placeholder = SizedBox(width: 12.0);
+        const placeholder = SizedBox(width: 12);
 
         final tile = Row(
           crossAxisAlignment: contentAlignment,
@@ -292,92 +314,99 @@ class ListTile extends StatelessWidget {
                 ],
               ),
             ),
-            if (trailing != null) trailing!,
+            ?trailing,
           ],
         );
 
         return Semantics(
           container: true,
-          selected:
-              selectionMode == ListTileSelectionMode.none ? null : selected,
+          selected: selectionMode == ListTileSelectionMode.none
+              ? null
+              : selected,
           child: FocusBorder(
             focused: states.isFocused,
             renderOutside: false,
             child: Container(
               decoration: ShapeDecoration(shape: shape, color: tileColor),
-              constraints: const BoxConstraints(
-                minHeight: kOneLineTileHeight,
-                minWidth: 88.0,
+              constraints: BoxConstraints(
+                minHeight:
+                    (kOneLineTileHeight +
+                            theme.visualDensity.baseSizeAdjustment.dy)
+                        .clamp(0.0, double.infinity),
+                minWidth: 88,
               ),
               margin: margin,
-              child: LayoutBuilder(builder: (context, constraints) {
-                final tileHeight = constraints.minHeight;
-                return Row(children: [
-                  if (selectionMode == ListTileSelectionMode.none)
-                    placeholder
-                  else if (selectionMode == ListTileSelectionMode.multiple)
-                    Padding(
-                      padding: const EdgeInsetsDirectional.only(
-                        start: 6.0,
-                        end: 12.0,
-                      ),
-                      child: IgnorePointer(
-                        child: ExcludeFocus(
-                          child: Checkbox(
-                            checked: selected,
-                            onChanged: (v) {
-                              onSelectionChange?.call(v ?? false);
-                            },
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final tileHeight = constraints.minHeight;
+                  return Row(
+                    children: [
+                      if (selectionMode == ListTileSelectionMode.none)
+                        placeholder
+                      else if (selectionMode == ListTileSelectionMode.multiple)
+                        Padding(
+                          padding: const EdgeInsetsDirectional.only(
+                            start: 6,
+                            end: 12,
                           ),
-                        ),
-                      ),
-                    )
-                  else if (selectionMode == ListTileSelectionMode.single)
-                    SizedBox(
-                      height: tileHeight,
-                      child: TweenAnimationBuilder<double>(
-                        duration: theme.mediumAnimationDuration,
-                        curve: theme.animationCurve,
-                        tween: Tween<double>(
-                          begin: 0.0,
-                          end: selected
-                              ? states.isPressed
-                                  ? tileHeight * 0.3
-                                  : tileHeight
-                              : 0.0,
-                        ),
-                        builder: (context, height, child) => Center(
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(
-                              vertical: contentPadding.vertical,
-                            ),
-                            child: Container(
-                              height: height * 0.7,
-                              width: 3.0,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(100.0),
-                                color: selected
-                                    ? theme.accentColor
-                                        .defaultBrushFor(theme.brightness)
-                                    : Colors.transparent,
+                          child: IgnorePointer(
+                            child: ExcludeFocus(
+                              child: Checkbox(
+                                checked: selected,
+                                onChanged: (v) {
+                                  onSelectionChange?.call(v ?? false);
+                                },
                               ),
-                              margin:
-                                  const EdgeInsetsDirectional.only(end: 8.0),
                             ),
                           ),
-                        ),
+                        )
+                      else if (selectionMode == ListTileSelectionMode.single)
+                        SizedBox(
+                          height: tileHeight,
+                          child: TweenAnimationBuilder<double>(
+                            duration: theme.mediumAnimationDuration,
+                            curve: theme.animationCurve,
+                            tween: Tween<double>(
+                              begin: 0,
+                              end: selected
+                                  ? states.isPressed
+                                        ? tileHeight * 0.3
+                                        : tileHeight
+                                  : 0.0,
+                            ),
+                            builder: (context, height, child) => Center(
+                              child: Padding(
+                                padding: EdgeInsetsDirectional.symmetric(
+                                  vertical: contentPadding.vertical,
+                                ),
+                                child: Container(
+                                  height: height * 0.7,
+                                  width: 3,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(100),
+                                    color: selected
+                                        ? theme.accentColor.defaultBrushFor(
+                                            theme.brightness,
+                                          )
+                                        : Colors.transparent,
+                                  ),
+                                  margin: const EdgeInsetsDirectional.only(
+                                    end: 8,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                      else
+                        placeholder,
+                      Expanded(
+                        child: Padding(padding: contentPadding, child: tile),
                       ),
-                    )
-                  else
-                    placeholder,
-                  Expanded(
-                    child: Padding(
-                      padding: contentPadding,
-                      child: tile,
-                    ),
-                  ),
-                ]);
-              }),
+                    ],
+                  );
+                },
+              ),
             ),
           ),
         );

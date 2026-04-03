@@ -19,7 +19,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 ///
 ///  * [FluentPageRoute], which is the [PageRoute] version of this class
 class FluentPage<T> extends Page<T> {
-  /// Creates a fluent-styled page.
+  /// Creates a windows-styled page.
   const FluentPage({
     required this.child,
     this.maintainState = true,
@@ -63,14 +63,14 @@ class FluentPageRoute<T> extends PageRoute<T> {
 
   /// Creates a modal route that replaces the entire screen.
   FluentPageRoute({
+    required WidgetBuilder builder,
     bool maintainState = true,
     String? barrierLabel,
-    required WidgetBuilder builder,
     super.settings,
     super.fullscreenDialog,
-  })  : _maintainState = maintainState,
-        _barrierLabel = barrierLabel,
-        _builder = builder;
+  }) : _maintainState = maintainState,
+       _barrierLabel = barrierLabel,
+       _builder = builder;
 
   @override
   Color? get barrierColor => null;

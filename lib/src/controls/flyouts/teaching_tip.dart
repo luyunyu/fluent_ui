@@ -1,15 +1,19 @@
 import 'package:fluent_ui/fluent_ui.dart';
 
+/// The default constraints for a [TeachingTip].
+///
+/// Based on Windows UI guidelines.
 /// https://github.com/microsoft/microsoft-ui-xaml/blob/main/src/controls/dev/TeachingTip/TeachingTip_themeresources.xaml
 const kTeachingTipConstraints = BoxConstraints(
-  minHeight: 40.0,
-  maxHeight: 520.0,
-  maxWidth: 336.0,
+  minHeight: 40,
+  maxHeight: 520,
+  maxWidth: 336,
 );
 
+/// A callback function for closing a teaching tip.
 typedef TooltipCloseCallback = void Function(BuildContext context);
 
-/// Displays a Fluent teaching tip at the desired position, with Fluent entrance
+/// Displays a Windows teaching tip at the desired position, with entrance
 /// and exit animations, modal barrier color, and modal barrier behavior
 /// (dialog is dismissible with a tap on the barrier).
 ///
@@ -82,10 +86,7 @@ Future<T?> showTeachingTip<T extends Object?>({
       final teachingTip = builder(context);
 
       if (nonTargetedAlignment != null) {
-        return Align(
-          alignment: nonTargetedAlignment,
-          child: teachingTip,
-        );
+        return Align(alignment: nonTargetedAlignment, child: teachingTip);
       }
 
       return teachingTip;
@@ -93,14 +94,35 @@ Future<T?> showTeachingTip<T extends Object?>({
   );
 }
 
-/// A teaching tip is a semi-persistent and content-rich flyout that provides
-/// contextual information. It is often used for informing, reminding, and
-/// teaching users about important and new features that may enhance their
-/// experience.
+/// A semi-persistent flyout for teaching users about features.
 ///
-/// A teaching tip may be light-dismiss or require explicit action to close. A
-/// teaching tip can target a specific UI element with its tail and also be used
-/// without a tail or target.
+/// Teaching tips provide contextual information and guidance about new or
+/// important features. They're ideal for onboarding, feature discovery,
+/// and providing helpful tips without interrupting the user's workflow.
+///
+/// ![TeachingTip example](https://learn.microsoft.com/en-us/windows/apps/develop/ui/controls/images/teaching-tip-non-targeted.png)
+///
+/// {@tool snippet}
+/// This example shows a teaching tip with a title and subtitle:
+///
+/// ```dart
+/// TeachingTip(
+///   title: Text('New feature'),
+///   subtitle: Text('Try out our new editing tools to enhance your photos.'),
+///   action: Button(
+///     child: Text('Got it'),
+///     onPressed: () => Navigator.pop(context),
+///   ),
+/// )
+/// ```
+/// {@end-tool}
+///
+/// ## Targeted vs non-targeted
+///
+/// * **Targeted** - Points to a specific UI element with a tail/arrow
+/// * **Non-targeted** - Appears without pointing to any element
+///
+/// A teaching tip may be light-dismiss or require explicit action to close.
 ///
 /// See also:
 ///
@@ -110,17 +132,17 @@ Future<T?> showTeachingTip<T extends Object?>({
 class TeachingTip extends StatelessWidget {
   /// Creates a teaching tip.
   const TeachingTip({
-    super.key,
-    this.leading,
     required this.title,
     required this.subtitle,
+    super.key,
+    this.leading,
     this.buttons,
     this.mediaContent,
     this.onClose = defaultCloseCallback,
   }) : assert(
-          buttons == null || mediaContent == null,
-          'The buttons and mediaContent properties can not coexist',
-        );
+         buttons == null || mediaContent == null,
+         'The buttons and mediaContent properties can not coexist',
+       );
 
   /// The leading widget of the teaching tip.
   ///
@@ -172,6 +194,9 @@ class TeachingTip extends StatelessWidget {
     Navigator.of(context).pop();
   }
 
+  /// The default transition animation builder for teaching tips.
+  ///
+  /// Creates a scale and fade animation from the placement direction.
   static Widget defaultTransitionBuilder(
     BuildContext context,
     Animation<double> animation,
@@ -181,43 +206,32 @@ class TeachingTip extends StatelessWidget {
     late Alignment alignment;
     switch (placementMode) {
       case FlyoutPlacementMode.bottomCenter:
-        alignment = const Alignment(0.0, 0.75);
-        break;
+        alignment = const Alignment(0, 0.75);
       case FlyoutPlacementMode.bottomLeft:
         alignment = const Alignment(-0.65, 0.75);
-        break;
       case FlyoutPlacementMode.bottomRight:
         alignment = const Alignment(0.75, 0.75);
-        break;
       case FlyoutPlacementMode.topCenter:
-        alignment = const Alignment(0.0, -0.75);
-        break;
+        alignment = const Alignment(0, -0.75);
       case FlyoutPlacementMode.topLeft:
         alignment = const Alignment(-0.65, -0.75);
-        break;
       case FlyoutPlacementMode.topRight:
         alignment = const Alignment(0.75, -0.75);
-        break;
       case FlyoutPlacementMode.leftTop:
       case FlyoutPlacementMode.leftCenter:
       case FlyoutPlacementMode.leftBottom:
-        alignment = const Alignment(0.75, 0.0);
-        break;
+        alignment = const Alignment(0.75, 0);
       case FlyoutPlacementMode.rightTop:
       case FlyoutPlacementMode.rightCenter:
       case FlyoutPlacementMode.rightBottom:
-        alignment = const Alignment(-0.75, 0.0);
-        break;
+        alignment = const Alignment(-0.75, 0);
       default:
         return flyout;
     }
 
     return ScaleTransition(
       alignment: alignment,
-      scale: CurvedAnimation(
-        curve: Curves.ease,
-        parent: animation,
-      ),
+      scale: CurvedAnimation(curve: Curves.ease, parent: animation),
       child: flyout,
     );
   }
@@ -237,12 +251,11 @@ class TeachingTip extends StatelessWidget {
       child: ConstrainedBox(
         constraints: kTeachingTipConstraints,
         child: Acrylic(
-          elevation: 1.0,
+          elevation: 1,
           shadowColor: Colors.black,
           shape: TeachingTipBorder(
             placement: flyout.placementMode,
             borderColor: theme.resources.surfaceStrokeColorDefault,
-            arrowCrossAxisWidth: horizontalPadding,
             arrowMainAxisWidth: verticalPadding,
           ),
           child: Container(
@@ -251,28 +264,24 @@ class TeachingTip extends StatelessWidget {
               top: switch (flyout.placementMode) {
                 FlyoutPlacementMode.bottomLeft ||
                 FlyoutPlacementMode.bottomCenter ||
-                FlyoutPlacementMode.bottomRight =>
-                  verticalPadding,
+                FlyoutPlacementMode.bottomRight => verticalPadding,
                 _ => 0.0,
               },
               bottom: switch (flyout.placementMode) {
                 FlyoutPlacementMode.topLeft ||
                 FlyoutPlacementMode.topCenter ||
-                FlyoutPlacementMode.topRight =>
-                  verticalPadding,
+                FlyoutPlacementMode.topRight => verticalPadding,
                 _ => 0.0,
               },
               left: switch (flyout.placementMode) {
                 FlyoutPlacementMode.rightTop ||
-                FlyoutPlacementMode.rightBottom =>
-                  horizontalPadding,
+                FlyoutPlacementMode.rightBottom => horizontalPadding,
                 FlyoutPlacementMode.rightCenter => verticalPadding,
                 _ => 0.0,
               },
               right: switch (flyout.placementMode) {
                 FlyoutPlacementMode.leftTop ||
-                FlyoutPlacementMode.leftBottom =>
-                  horizontalPadding,
+                FlyoutPlacementMode.leftBottom => horizontalPadding,
                 FlyoutPlacementMode.leftCenter => verticalPadding,
                 _ => 0.0,
               },
@@ -286,73 +295,77 @@ class TeachingTip extends StatelessWidget {
                     (switch (flyout.placementMode) {
                       FlyoutPlacementMode.topLeft ||
                       FlyoutPlacementMode.topCenter ||
-                      FlyoutPlacementMode.topRight =>
-                        true,
+                      FlyoutPlacementMode.topRight => true,
                       _ => false,
                     }))
                   mediaContent!,
                 IntrinsicHeight(
-                  child: Row(children: [
-                    const SizedBox(width: horizontalPadding),
-                    if (leading != null)
-                      Padding(
-                        padding: const EdgeInsetsDirectional.only(
-                          top: verticalPadding,
-                          end: 8.0,
-                        ),
-                        child: leading!,
-                      ),
-                    Flexible(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: verticalPadding),
-                          DefaultTextStyle(
-                            style: theme.typography.bodyStrong ??
-                                const TextStyle(),
-                            child: title,
-                          ),
-                          subtitle,
-                        ],
-                      ),
-                    ),
-                    if (onClose != null)
-                      Align(
-                        alignment: AlignmentDirectional.topStart,
-                        child: Padding(
+                  child: Row(
+                    children: [
+                      const SizedBox(width: horizontalPadding),
+                      if (leading != null)
+                        Padding(
                           padding: const EdgeInsetsDirectional.only(
-                            top: verticalPadding / 2,
-                            start: 4.0,
-                            end: verticalPadding / 2,
+                            top: verticalPadding,
+                            end: 8,
                           ),
-                          child: Builder(builder: (context) {
-                            return Tooltip(
-                              message: localizations.closeButtonLabel,
-                              child: IconButton(
-                                icon: const Icon(
-                                  FluentIcons.chrome_close,
-                                  size: 12.0,
-                                ),
-                                onPressed: () => onClose!(context),
-                              ),
-                            );
-                          }),
+                          child: leading,
                         ),
-                      )
-                    else
-                      const SizedBox(width: horizontalPadding)
-                  ]),
+                      Flexible(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: verticalPadding),
+                            DefaultTextStyle(
+                              style:
+                                  theme.typography.bodyStrong ??
+                                  const TextStyle(),
+                              child: title,
+                            ),
+                            subtitle,
+                          ],
+                        ),
+                      ),
+                      if (onClose != null)
+                        Align(
+                          alignment: AlignmentDirectional.topStart,
+                          child: Padding(
+                            padding: const EdgeInsetsDirectional.only(
+                              top: verticalPadding / 2,
+                              start: 4,
+                              end: verticalPadding / 2,
+                            ),
+                            child: Builder(
+                              builder: (context) {
+                                return Tooltip(
+                                  message: localizations.closeButtonLabel,
+                                  child: IconButton(
+                                    icon: const Icon(
+                                      FluentIcons.chrome_close,
+                                      size: 12,
+                                    ),
+                                    onPressed: () => onClose!(context),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        )
+                      else
+                        const SizedBox(width: horizontalPadding),
+                    ],
+                  ),
                 ),
                 if (buttons != null && buttons!.isNotEmpty)
                   Padding(
                     padding: const EdgeInsetsDirectional.only(
                       start: horizontalPadding,
-                      top: 6.0,
+                      top: 6,
                       end: horizontalPadding,
                     ),
                     child: Row(
-                      spacing: 6.0,
+                      spacing: 6,
                       children: buttons!.map<Widget>((button) {
                         return Expanded(child: button);
                       }).toList(),
@@ -366,8 +379,7 @@ class TeachingTip extends StatelessWidget {
                     (switch (flyout.placementMode) {
                           FlyoutPlacementMode.bottomLeft ||
                           FlyoutPlacementMode.bottomCenter ||
-                          FlyoutPlacementMode.bottomRight =>
-                            true,
+                          FlyoutPlacementMode.bottomRight => true,
                           _ => false,
                         } ||
                         flyout.placementMode.isHorizontal))
@@ -381,6 +393,12 @@ class TeachingTip extends StatelessWidget {
   }
 }
 
+/// The default teaching tip border.
+///
+/// See also:
+///
+/// * [ShapeBorder], which is the base class for this class.
+/// * [TeachingTip], which is the widget that uses this border.
 class TeachingTipBorder extends ShapeBorder {
   /// The placement of the teaching tip.
   final FlyoutPlacementMode placement;
@@ -400,6 +418,7 @@ class TeachingTipBorder extends ShapeBorder {
   /// The width of the arrow in the cross axis.
   final double arrowCrossAxisWidth;
 
+  /// Creates a border for the teaching tip.
   const TeachingTipBorder({
     required this.placement,
     required this.borderColor,
@@ -410,7 +429,8 @@ class TeachingTipBorder extends ShapeBorder {
   });
 
   @override
-  EdgeInsetsGeometry get dimensions => EdgeInsets.all(arrowMainAxisWidth);
+  EdgeInsetsGeometry get dimensions =>
+      EdgeInsetsDirectional.all(arrowMainAxisWidth);
 
   @override
   Path getOuterPath(Rect rect, {TextDirection? textDirection}) {
@@ -420,164 +440,313 @@ class TeachingTipBorder extends ShapeBorder {
         path.moveTo(rect.left + borderRadius, rect.top);
         path.lineTo(rect.right - borderRadius, rect.top);
         path.quadraticBezierTo(
-            rect.right, rect.top, rect.right, rect.top + borderRadius);
+          rect.right,
+          rect.top,
+          rect.right,
+          rect.top + borderRadius,
+        );
         path.lineTo(
-            rect.right, rect.bottom - arrowCrossAxisWidth - borderRadius);
-        path.quadraticBezierTo(rect.right, rect.bottom - arrowCrossAxisWidth,
-            rect.right - borderRadius, rect.bottom - arrowCrossAxisWidth);
-        path.lineTo(rect.left + borderMargin + arrowMainAxisWidth,
-            rect.bottom - arrowCrossAxisWidth);
+          rect.right,
+          rect.bottom - arrowCrossAxisWidth - borderRadius,
+        );
+        path.quadraticBezierTo(
+          rect.right,
+          rect.bottom - arrowCrossAxisWidth,
+          rect.right - borderRadius,
+          rect.bottom - arrowCrossAxisWidth,
+        );
+        path.lineTo(
+          rect.left + borderMargin + arrowMainAxisWidth,
+          rect.bottom - arrowCrossAxisWidth,
+        );
         // make the arrow
         path.lineTo(
-            rect.left + borderMargin + arrowMainAxisWidth / 2, rect.bottom);
+          rect.left + borderMargin + arrowMainAxisWidth / 2,
+          rect.bottom,
+        );
         path.lineTo(
-            rect.left + borderMargin, rect.bottom - arrowCrossAxisWidth);
+          rect.left + borderMargin,
+          rect.bottom - arrowCrossAxisWidth,
+        );
         // end the arrow
-        path.quadraticBezierTo(rect.left, rect.bottom - arrowCrossAxisWidth,
-            rect.left, rect.bottom - arrowCrossAxisWidth - borderRadius);
+        path.quadraticBezierTo(
+          rect.left,
+          rect.bottom - arrowCrossAxisWidth,
+          rect.left,
+          rect.bottom - arrowCrossAxisWidth - borderRadius,
+        );
         path.lineTo(rect.left, rect.top + borderRadius);
         path.quadraticBezierTo(
-            rect.left, rect.top, rect.left + borderRadius, rect.top);
+          rect.left,
+          rect.top,
+          rect.left + borderRadius,
+          rect.top,
+        );
         path.close();
-        break;
       case FlyoutPlacementMode.topCenter:
         path.moveTo(rect.left + borderRadius, rect.top);
         path.lineTo(rect.right - borderRadius, rect.top);
         path.quadraticBezierTo(
-            rect.right, rect.top, rect.right, rect.top + borderRadius);
+          rect.right,
+          rect.top,
+          rect.right,
+          rect.top + borderRadius,
+        );
         path.lineTo(
-            rect.right, rect.bottom - arrowCrossAxisWidth - borderRadius);
-        path.quadraticBezierTo(rect.right, rect.bottom - arrowCrossAxisWidth,
-            rect.right - borderRadius, rect.bottom - arrowCrossAxisWidth);
-        path.lineTo(rect.left + rect.width / 2 + arrowMainAxisWidth / 2,
-            rect.bottom - arrowCrossAxisWidth);
+          rect.right,
+          rect.bottom - arrowCrossAxisWidth - borderRadius,
+        );
+        path.quadraticBezierTo(
+          rect.right,
+          rect.bottom - arrowCrossAxisWidth,
+          rect.right - borderRadius,
+          rect.bottom - arrowCrossAxisWidth,
+        );
+        path.lineTo(
+          rect.left + rect.width / 2 + arrowMainAxisWidth / 2,
+          rect.bottom - arrowCrossAxisWidth,
+        );
         // make the arrow
         path.lineTo(rect.left + rect.width / 2, rect.bottom);
-        path.lineTo(rect.left + rect.width / 2 - arrowMainAxisWidth / 2,
-            rect.bottom - arrowCrossAxisWidth);
+        path.lineTo(
+          rect.left + rect.width / 2 - arrowMainAxisWidth / 2,
+          rect.bottom - arrowCrossAxisWidth,
+        );
         // end the arrow
         path.lineTo(
-            rect.left + borderMargin, rect.bottom - arrowCrossAxisWidth);
-        path.quadraticBezierTo(rect.left, rect.bottom - arrowCrossAxisWidth,
-            rect.left, rect.bottom - arrowCrossAxisWidth - borderRadius);
+          rect.left + borderMargin,
+          rect.bottom - arrowCrossAxisWidth,
+        );
+        path.quadraticBezierTo(
+          rect.left,
+          rect.bottom - arrowCrossAxisWidth,
+          rect.left,
+          rect.bottom - arrowCrossAxisWidth - borderRadius,
+        );
         path.lineTo(rect.left, rect.top + borderRadius);
         path.quadraticBezierTo(
-            rect.left, rect.top, rect.left + borderRadius, rect.top);
+          rect.left,
+          rect.top,
+          rect.left + borderRadius,
+          rect.top,
+        );
         path.close();
-        break;
       case FlyoutPlacementMode.topRight:
         path.moveTo(rect.left + borderRadius, rect.top);
         path.lineTo(rect.right - borderRadius, rect.top);
         path.quadraticBezierTo(
-            rect.right, rect.top, rect.right, rect.top + borderRadius);
+          rect.right,
+          rect.top,
+          rect.right,
+          rect.top + borderRadius,
+        );
         path.lineTo(
-            rect.right, rect.bottom - arrowCrossAxisWidth - borderRadius);
-        path.quadraticBezierTo(rect.right, rect.bottom - arrowCrossAxisWidth,
-            rect.right - borderRadius, rect.bottom - arrowCrossAxisWidth);
+          rect.right,
+          rect.bottom - arrowCrossAxisWidth - borderRadius,
+        );
+        path.quadraticBezierTo(
+          rect.right,
+          rect.bottom - arrowCrossAxisWidth,
+          rect.right - borderRadius,
+          rect.bottom - arrowCrossAxisWidth,
+        );
         path.lineTo(
-            rect.right - borderMargin, rect.bottom - arrowCrossAxisWidth);
+          rect.right - borderMargin,
+          rect.bottom - arrowCrossAxisWidth,
+        );
         // make the arrow
         path.lineTo(
-            rect.right - borderMargin - arrowMainAxisWidth / 2, rect.bottom);
-        path.lineTo(rect.right - borderMargin - arrowMainAxisWidth,
-            rect.bottom - arrowCrossAxisWidth);
+          rect.right - borderMargin - arrowMainAxisWidth / 2,
+          rect.bottom,
+        );
+        path.lineTo(
+          rect.right - borderMargin - arrowMainAxisWidth,
+          rect.bottom - arrowCrossAxisWidth,
+        );
         // end the arrow
         path.lineTo(
-            rect.left + borderMargin, rect.bottom - arrowCrossAxisWidth);
-        path.quadraticBezierTo(rect.left, rect.bottom - arrowCrossAxisWidth,
-            rect.left, rect.bottom - arrowCrossAxisWidth - borderRadius);
+          rect.left + borderMargin,
+          rect.bottom - arrowCrossAxisWidth,
+        );
+        path.quadraticBezierTo(
+          rect.left,
+          rect.bottom - arrowCrossAxisWidth,
+          rect.left,
+          rect.bottom - arrowCrossAxisWidth - borderRadius,
+        );
         path.lineTo(rect.left, rect.top + borderRadius);
         path.quadraticBezierTo(
-            rect.left, rect.top, rect.left + borderRadius, rect.top);
+          rect.left,
+          rect.top,
+          rect.left + borderRadius,
+          rect.top,
+        );
 
-        break;
       case FlyoutPlacementMode.bottomLeft:
         path.moveTo(rect.left + borderRadius, rect.top + arrowCrossAxisWidth);
         path.lineTo(rect.left + borderMargin, rect.top + arrowCrossAxisWidth);
         path.lineTo(
-            rect.left + borderMargin + arrowMainAxisWidth / 2, rect.top);
-        path.lineTo(rect.left + borderMargin + arrowMainAxisWidth,
-            rect.top + arrowCrossAxisWidth);
+          rect.left + borderMargin + arrowMainAxisWidth / 2,
+          rect.top,
+        );
+        path.lineTo(
+          rect.left + borderMargin + arrowMainAxisWidth,
+          rect.top + arrowCrossAxisWidth,
+        );
         path.lineTo(rect.right - borderRadius, rect.top + arrowCrossAxisWidth);
-        path.quadraticBezierTo(rect.right, rect.top + arrowCrossAxisWidth,
-            rect.right, rect.top + arrowCrossAxisWidth + borderRadius);
+        path.quadraticBezierTo(
+          rect.right,
+          rect.top + arrowCrossAxisWidth,
+          rect.right,
+          rect.top + arrowCrossAxisWidth + borderRadius,
+        );
         path.lineTo(rect.right, rect.bottom - borderRadius);
         path.quadraticBezierTo(
-            rect.right, rect.bottom, rect.right - borderRadius, rect.bottom);
+          rect.right,
+          rect.bottom,
+          rect.right - borderRadius,
+          rect.bottom,
+        );
         path.lineTo(rect.left + borderRadius, rect.bottom);
         path.quadraticBezierTo(
-            rect.left, rect.bottom, rect.left, rect.bottom - borderRadius);
+          rect.left,
+          rect.bottom,
+          rect.left,
+          rect.bottom - borderRadius,
+        );
         path.lineTo(rect.left, rect.top + arrowCrossAxisWidth + borderRadius);
-        path.quadraticBezierTo(rect.left, rect.top + arrowCrossAxisWidth,
-            rect.left + borderRadius, rect.top + arrowCrossAxisWidth);
+        path.quadraticBezierTo(
+          rect.left,
+          rect.top + arrowCrossAxisWidth,
+          rect.left + borderRadius,
+          rect.top + arrowCrossAxisWidth,
+        );
         path.close();
-        break;
       case FlyoutPlacementMode.bottomCenter:
         path.moveTo(rect.left + borderRadius, rect.top + arrowCrossAxisWidth);
-        path.lineTo(rect.left + rect.width / 2 - arrowMainAxisWidth / 2,
-            rect.top + arrowCrossAxisWidth);
+        path.lineTo(
+          rect.left + rect.width / 2 - arrowMainAxisWidth / 2,
+          rect.top + arrowCrossAxisWidth,
+        );
         // make the arrow
         path.lineTo(rect.left + rect.width / 2, rect.top);
-        path.lineTo(rect.left + rect.width / 2 + arrowMainAxisWidth / 2,
-            rect.top + arrowCrossAxisWidth);
+        path.lineTo(
+          rect.left + rect.width / 2 + arrowMainAxisWidth / 2,
+          rect.top + arrowCrossAxisWidth,
+        );
         // end the arrow
         path.lineTo(rect.right - borderRadius, rect.top + arrowCrossAxisWidth);
-        path.quadraticBezierTo(rect.right, rect.top + arrowCrossAxisWidth,
-            rect.right, rect.top + borderRadius + arrowCrossAxisWidth);
+        path.quadraticBezierTo(
+          rect.right,
+          rect.top + arrowCrossAxisWidth,
+          rect.right,
+          rect.top + borderRadius + arrowCrossAxisWidth,
+        );
         path.lineTo(rect.right, rect.bottom - borderRadius);
         path.quadraticBezierTo(
-            rect.right, rect.bottom, rect.right - borderRadius, rect.bottom);
+          rect.right,
+          rect.bottom,
+          rect.right - borderRadius,
+          rect.bottom,
+        );
         path.lineTo(rect.left + borderRadius, rect.bottom);
         path.quadraticBezierTo(
-            rect.left, rect.bottom, rect.left, rect.bottom - borderRadius);
+          rect.left,
+          rect.bottom,
+          rect.left,
+          rect.bottom - borderRadius,
+        );
         path.lineTo(rect.left, rect.top + borderRadius + arrowCrossAxisWidth);
-        path.quadraticBezierTo(rect.left, rect.top + arrowCrossAxisWidth,
-            rect.left + borderRadius, rect.top + arrowCrossAxisWidth);
+        path.quadraticBezierTo(
+          rect.left,
+          rect.top + arrowCrossAxisWidth,
+          rect.left + borderRadius,
+          rect.top + arrowCrossAxisWidth,
+        );
         path.close();
-        break;
       case FlyoutPlacementMode.bottomRight:
         path.moveTo(rect.left + borderRadius, rect.top + arrowCrossAxisWidth);
-        path.lineTo(rect.right - borderMargin - arrowMainAxisWidth,
-            rect.top + arrowCrossAxisWidth);
         path.lineTo(
-            rect.right - borderMargin - arrowMainAxisWidth / 2, rect.top);
+          rect.right - borderMargin - arrowMainAxisWidth,
+          rect.top + arrowCrossAxisWidth,
+        );
+        path.lineTo(
+          rect.right - borderMargin - arrowMainAxisWidth / 2,
+          rect.top,
+        );
         path.lineTo(rect.right - borderMargin, rect.top + arrowCrossAxisWidth);
         path.lineTo(rect.right - borderRadius, rect.top + arrowCrossAxisWidth);
-        path.quadraticBezierTo(rect.right, rect.top + arrowCrossAxisWidth,
-            rect.right, rect.top + arrowCrossAxisWidth + borderRadius);
+        path.quadraticBezierTo(
+          rect.right,
+          rect.top + arrowCrossAxisWidth,
+          rect.right,
+          rect.top + arrowCrossAxisWidth + borderRadius,
+        );
         path.lineTo(rect.right, rect.bottom - borderRadius);
         path.quadraticBezierTo(
-            rect.right, rect.bottom, rect.right - borderRadius, rect.bottom);
+          rect.right,
+          rect.bottom,
+          rect.right - borderRadius,
+          rect.bottom,
+        );
         path.lineTo(rect.left + borderRadius, rect.bottom);
         path.quadraticBezierTo(
-            rect.left, rect.bottom, rect.left, rect.bottom - borderRadius);
+          rect.left,
+          rect.bottom,
+          rect.left,
+          rect.bottom - borderRadius,
+        );
         path.lineTo(rect.left, rect.top + arrowCrossAxisWidth + borderRadius);
-        path.quadraticBezierTo(rect.left, rect.top + arrowCrossAxisWidth,
-            rect.left + borderRadius, rect.top + arrowCrossAxisWidth);
+        path.quadraticBezierTo(
+          rect.left,
+          rect.top + arrowCrossAxisWidth,
+          rect.left + borderRadius,
+          rect.top + arrowCrossAxisWidth,
+        );
         path.close();
-        break;
       case FlyoutPlacementMode.leftTop:
         path.moveTo(rect.right - arrowCrossAxisWidth, rect.top + borderRadius);
         path.lineTo(rect.right - arrowCrossAxisWidth, rect.top + borderMargin);
         path.lineTo(
-            rect.right, rect.top + borderMargin + arrowMainAxisWidth / 2);
-        path.lineTo(rect.right - arrowCrossAxisWidth,
-            rect.top + borderMargin + arrowMainAxisWidth);
+          rect.right,
+          rect.top + borderMargin + arrowMainAxisWidth / 2,
+        );
         path.lineTo(
-            rect.right - arrowCrossAxisWidth, rect.bottom - borderRadius);
-        path.quadraticBezierTo(rect.right - arrowCrossAxisWidth, rect.bottom,
-            rect.right - arrowCrossAxisWidth - borderRadius, rect.bottom);
+          rect.right - arrowCrossAxisWidth,
+          rect.top + borderMargin + arrowMainAxisWidth,
+        );
+        path.lineTo(
+          rect.right - arrowCrossAxisWidth,
+          rect.bottom - borderRadius,
+        );
+        path.quadraticBezierTo(
+          rect.right - arrowCrossAxisWidth,
+          rect.bottom,
+          rect.right - arrowCrossAxisWidth - borderRadius,
+          rect.bottom,
+        );
         path.lineTo(rect.left + borderRadius, rect.bottom);
         path.quadraticBezierTo(
-            rect.left, rect.bottom, rect.left, rect.bottom - borderRadius);
+          rect.left,
+          rect.bottom,
+          rect.left,
+          rect.bottom - borderRadius,
+        );
         path.lineTo(rect.left, rect.top + borderRadius);
         path.quadraticBezierTo(
-            rect.left, rect.top, rect.left + borderRadius, rect.top);
+          rect.left,
+          rect.top,
+          rect.left + borderRadius,
+          rect.top,
+        );
         path.lineTo(rect.right - arrowCrossAxisWidth - borderRadius, rect.top);
-        path.quadraticBezierTo(rect.right - arrowCrossAxisWidth, rect.top,
-            rect.right - arrowCrossAxisWidth, rect.top + borderRadius);
+        path.quadraticBezierTo(
+          rect.right - arrowCrossAxisWidth,
+          rect.top,
+          rect.right - arrowCrossAxisWidth,
+          rect.top + borderRadius,
+        );
         path.close();
-        break;
       case FlyoutPlacementMode.leftCenter:
         path.moveTo(rect.right - arrowMainAxisWidth, rect.top + borderRadius);
         // create arrow
@@ -595,66 +764,127 @@ class TeachingTipBorder extends ShapeBorder {
         );
         // end arrow
         path.lineTo(
-            rect.right - arrowMainAxisWidth, rect.bottom - borderRadius);
-        path.quadraticBezierTo(rect.right - arrowMainAxisWidth, rect.bottom,
-            rect.right - arrowMainAxisWidth - borderRadius, rect.bottom);
+          rect.right - arrowMainAxisWidth,
+          rect.bottom - borderRadius,
+        );
+        path.quadraticBezierTo(
+          rect.right - arrowMainAxisWidth,
+          rect.bottom,
+          rect.right - arrowMainAxisWidth - borderRadius,
+          rect.bottom,
+        );
         path.lineTo(rect.left + borderRadius, rect.bottom);
         path.quadraticBezierTo(
-            rect.left, rect.bottom, rect.left, rect.bottom - borderRadius);
+          rect.left,
+          rect.bottom,
+          rect.left,
+          rect.bottom - borderRadius,
+        );
         path.lineTo(rect.left, rect.top + borderRadius);
         path.quadraticBezierTo(
-            rect.left, rect.top, rect.left + borderRadius, rect.top);
+          rect.left,
+          rect.top,
+          rect.left + borderRadius,
+          rect.top,
+        );
         path.lineTo(rect.right - arrowMainAxisWidth - borderRadius, rect.top);
-        path.quadraticBezierTo(rect.right - arrowMainAxisWidth, rect.top,
-            rect.right - arrowMainAxisWidth, rect.top + borderRadius);
+        path.quadraticBezierTo(
+          rect.right - arrowMainAxisWidth,
+          rect.top,
+          rect.right - arrowMainAxisWidth,
+          rect.top + borderRadius,
+        );
         path.close();
 
-        break;
       case FlyoutPlacementMode.leftBottom:
         path.moveTo(rect.right - arrowCrossAxisWidth, rect.top + borderRadius);
-        path.lineTo(rect.right - arrowCrossAxisWidth,
-            rect.bottom - borderMargin - arrowMainAxisWidth);
         path.lineTo(
-            rect.right, rect.bottom - borderMargin - arrowMainAxisWidth / 2);
+          rect.right - arrowCrossAxisWidth,
+          rect.bottom - borderMargin - arrowMainAxisWidth,
+        );
         path.lineTo(
-            rect.right - arrowCrossAxisWidth, rect.bottom - borderMargin);
+          rect.right,
+          rect.bottom - borderMargin - arrowMainAxisWidth / 2,
+        );
         path.lineTo(
-            rect.right - arrowCrossAxisWidth, rect.bottom - borderRadius);
-        path.quadraticBezierTo(rect.right - arrowCrossAxisWidth, rect.bottom,
-            rect.right - arrowCrossAxisWidth - borderRadius, rect.bottom);
+          rect.right - arrowCrossAxisWidth,
+          rect.bottom - borderMargin,
+        );
+        path.lineTo(
+          rect.right - arrowCrossAxisWidth,
+          rect.bottom - borderRadius,
+        );
+        path.quadraticBezierTo(
+          rect.right - arrowCrossAxisWidth,
+          rect.bottom,
+          rect.right - arrowCrossAxisWidth - borderRadius,
+          rect.bottom,
+        );
         path.lineTo(rect.left + borderRadius, rect.bottom);
         path.quadraticBezierTo(
-            rect.left, rect.bottom, rect.left, rect.bottom - borderRadius);
+          rect.left,
+          rect.bottom,
+          rect.left,
+          rect.bottom - borderRadius,
+        );
         path.lineTo(rect.left, rect.top + borderRadius);
         path.quadraticBezierTo(
-            rect.left, rect.top, rect.left + borderRadius, rect.top);
+          rect.left,
+          rect.top,
+          rect.left + borderRadius,
+          rect.top,
+        );
         path.lineTo(rect.right - arrowMainAxisWidth - borderRadius, rect.top);
-        path.quadraticBezierTo(rect.right - arrowCrossAxisWidth, rect.top,
-            rect.right - arrowCrossAxisWidth, rect.top + borderRadius);
+        path.quadraticBezierTo(
+          rect.right - arrowCrossAxisWidth,
+          rect.top,
+          rect.right - arrowCrossAxisWidth,
+          rect.top + borderRadius,
+        );
         path.close();
-        break;
       case FlyoutPlacementMode.rightTop:
         path.moveTo(rect.left + arrowCrossAxisWidth, rect.top + borderRadius);
         path.lineTo(rect.left + arrowCrossAxisWidth, rect.top + borderMargin);
         path.lineTo(
-            rect.left, rect.top + borderMargin + arrowMainAxisWidth / 2);
-        path.lineTo(rect.left + arrowCrossAxisWidth,
-            rect.top + borderMargin + arrowMainAxisWidth);
+          rect.left,
+          rect.top + borderMargin + arrowMainAxisWidth / 2,
+        );
         path.lineTo(
-            rect.left + arrowCrossAxisWidth, rect.bottom - borderRadius);
-        path.quadraticBezierTo(rect.left + arrowMainAxisWidth, rect.bottom,
-            rect.left + arrowCrossAxisWidth + borderRadius, rect.bottom);
+          rect.left + arrowCrossAxisWidth,
+          rect.top + borderMargin + arrowMainAxisWidth,
+        );
+        path.lineTo(
+          rect.left + arrowCrossAxisWidth,
+          rect.bottom - borderRadius,
+        );
+        path.quadraticBezierTo(
+          rect.left + arrowMainAxisWidth,
+          rect.bottom,
+          rect.left + arrowCrossAxisWidth + borderRadius,
+          rect.bottom,
+        );
         path.lineTo(rect.right - borderRadius, rect.bottom);
         path.quadraticBezierTo(
-            rect.right, rect.bottom, rect.right, rect.bottom - borderRadius);
+          rect.right,
+          rect.bottom,
+          rect.right,
+          rect.bottom - borderRadius,
+        );
         path.lineTo(rect.right, rect.top + borderRadius);
         path.quadraticBezierTo(
-            rect.right, rect.top, rect.right - borderRadius, rect.top);
+          rect.right,
+          rect.top,
+          rect.right - borderRadius,
+          rect.top,
+        );
         path.lineTo(rect.left + arrowCrossAxisWidth + borderRadius, rect.top);
-        path.quadraticBezierTo(rect.left + arrowCrossAxisWidth, rect.top,
-            rect.left + arrowCrossAxisWidth, rect.top + borderRadius);
+        path.quadraticBezierTo(
+          rect.left + arrowCrossAxisWidth,
+          rect.top,
+          rect.left + arrowCrossAxisWidth,
+          rect.top + borderRadius,
+        );
         path.close();
-        break;
       case FlyoutPlacementMode.rightCenter:
         path.moveTo(rect.left + arrowMainAxisWidth, rect.top + borderRadius);
         // create arrow
@@ -672,45 +902,80 @@ class TeachingTipBorder extends ShapeBorder {
         );
         // end arrow
         path.lineTo(rect.left + arrowMainAxisWidth, rect.bottom - borderRadius);
-        path.quadraticBezierTo(rect.left + arrowMainAxisWidth, rect.bottom,
-            rect.left + arrowMainAxisWidth + borderRadius, rect.bottom);
+        path.quadraticBezierTo(
+          rect.left + arrowMainAxisWidth,
+          rect.bottom,
+          rect.left + arrowMainAxisWidth + borderRadius,
+          rect.bottom,
+        );
         path.lineTo(rect.right - borderRadius, rect.bottom);
         path.quadraticBezierTo(
-            rect.right, rect.bottom, rect.right, rect.bottom - borderRadius);
+          rect.right,
+          rect.bottom,
+          rect.right,
+          rect.bottom - borderRadius,
+        );
         path.lineTo(rect.right, rect.top + borderRadius);
         path.quadraticBezierTo(
-            rect.right, rect.top, rect.right - borderRadius, rect.top);
+          rect.right,
+          rect.top,
+          rect.right - borderRadius,
+          rect.top,
+        );
         path.lineTo(rect.left + arrowMainAxisWidth + borderRadius, rect.top);
-        path.quadraticBezierTo(rect.left + arrowMainAxisWidth, rect.top,
-            rect.left + arrowMainAxisWidth, rect.top + borderRadius);
+        path.quadraticBezierTo(
+          rect.left + arrowMainAxisWidth,
+          rect.top,
+          rect.left + arrowMainAxisWidth,
+          rect.top + borderRadius,
+        );
         path.close();
-        break;
       case FlyoutPlacementMode.rightBottom:
         path.moveTo(rect.left + arrowCrossAxisWidth, rect.top + borderRadius);
-        path.lineTo(rect.left + arrowCrossAxisWidth,
-            rect.bottom - borderMargin - arrowMainAxisWidth);
         path.lineTo(
-            rect.left, rect.bottom - borderMargin - arrowMainAxisWidth / 2);
+          rect.left + arrowCrossAxisWidth,
+          rect.bottom - borderMargin - arrowMainAxisWidth,
+        );
         path.lineTo(
-            rect.left + arrowCrossAxisWidth, rect.bottom - borderMargin);
-        path.quadraticBezierTo(rect.left + arrowCrossAxisWidth, rect.bottom,
-            rect.left + arrowCrossAxisWidth + borderRadius, rect.bottom);
+          rect.left,
+          rect.bottom - borderMargin - arrowMainAxisWidth / 2,
+        );
+        path.lineTo(
+          rect.left + arrowCrossAxisWidth,
+          rect.bottom - borderMargin,
+        );
+        path.quadraticBezierTo(
+          rect.left + arrowCrossAxisWidth,
+          rect.bottom,
+          rect.left + arrowCrossAxisWidth + borderRadius,
+          rect.bottom,
+        );
         path.lineTo(rect.right - borderRadius, rect.bottom);
         path.quadraticBezierTo(
-            rect.right, rect.bottom, rect.right, rect.bottom - borderRadius);
+          rect.right,
+          rect.bottom,
+          rect.right,
+          rect.bottom - borderRadius,
+        );
         path.lineTo(rect.right, rect.top + borderRadius);
         path.quadraticBezierTo(
-            rect.right, rect.top, rect.right - borderRadius, rect.top);
+          rect.right,
+          rect.top,
+          rect.right - borderRadius,
+          rect.top,
+        );
         path.lineTo(rect.left + arrowMainAxisWidth + borderRadius, rect.top);
-        path.quadraticBezierTo(rect.left + arrowCrossAxisWidth, rect.top,
-            rect.left + arrowCrossAxisWidth, rect.top + borderRadius);
+        path.quadraticBezierTo(
+          rect.left + arrowCrossAxisWidth,
+          rect.top,
+          rect.left + arrowCrossAxisWidth,
+          rect.top + borderRadius,
+        );
         path.close();
-        break;
       case FlyoutPlacementMode.full:
         path.addRRect(
           RRect.fromRectAndRadius(rect, Radius.circular(borderRadius)),
         );
-        break;
       case FlyoutPlacementMode.auto:
         throw UnsupportedError('Auto placement is not supported');
     }
@@ -723,13 +988,9 @@ class TeachingTipBorder extends ShapeBorder {
 
   @override
   Path getInnerPath(Rect rect, {TextDirection? textDirection}) {
-    return Path()
-      ..addRRect(
-        RRect.fromRectAndRadius(
-          rect.deflate(1),
-          Radius.circular(borderRadius),
-        ),
-      );
+    return Path()..addRRect(
+      RRect.fromRectAndRadius(rect.deflate(1), Radius.circular(borderRadius)),
+    );
   }
 
   @override

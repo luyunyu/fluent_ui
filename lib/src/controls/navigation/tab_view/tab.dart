@@ -1,5 +1,6 @@
 part of 'tab_view.dart';
 
+/// The visibility mode of the close button.
 enum CloseButtonVisibilityMode {
   /// The close button will never be visible
   never,
@@ -33,8 +34,8 @@ enum TabWidthBehavior {
 ///   * [Tab], the widget that uses this data.
 ///   * [TabView], the widget that uses the [Tab] widget.
 class TabData extends InheritedWidget {
+  /// Creates a data class that describes the state of a tab.
   const TabData({
-    super.key,
     required super.child,
     required this.selected,
     required this.onPressed,
@@ -44,6 +45,7 @@ class TabData extends InheritedWidget {
     required this.animationCurve,
     required this.visibilityMode,
     required this.tabWidthBehavior,
+    super.key,
   });
 
   /// Whether the tab is selected or not.
@@ -84,6 +86,9 @@ class TabData extends InheritedWidget {
   ///     of the tab width.
   final TabWidthBehavior tabWidthBehavior;
 
+  /// Gets the closest [TabData] ancestor, if any.
+  ///
+  /// Use this when the data might not exist in the widget tree.
   static TabData of(BuildContext context) {
     return context.dependOnInheritedWidgetOfExactType<TabData>()!;
   }
@@ -141,9 +146,7 @@ class __TabBodyState extends State<_TabBody> {
         return ExcludeFocus(
           key: ValueKey(index),
           excluding: !isSelected,
-          child: FocusTraversalGroup(
-            child: item.body,
-          ),
+          child: FocusTraversalGroup(child: item.body),
         );
       },
     );
@@ -156,16 +159,16 @@ class Tab extends StatefulWidget {
 
   /// Creates a tab.
   Tab({
-    super.key,
-    this.icon = const SizedBox.shrink(),
     required this.text,
     required this.body,
+    super.key,
+    this.icon = const SizedBox.shrink(),
     this.backgroundColor,
     this.selectedBackgroundColor,
     this.foregroundColor,
     this.selectedForegroundColor,
     this.outlineColor,
-    this.closeIcon = const Icon(FluentIcons.chrome_close),
+    this.closeIcon = const WindowsIcon(WindowsIcons.chrome_close),
     this.onClosed,
     this.semanticLabel,
     this.disabled = false,
@@ -200,19 +203,19 @@ class Tab extends StatefulWidget {
   final Widget body;
 
   /// The background color of the tab.
-  final WidgetStateProperty<Color>? backgroundColor;
+  final WidgetStateColor? backgroundColor;
 
   /// The background color of the tab if it is selected.
-  final WidgetStateProperty<Color>? selectedBackgroundColor;
+  final WidgetStateColor? selectedBackgroundColor;
 
   /// The foreground color of the tab.
-  final WidgetStateProperty<Color>? foregroundColor;
+  final WidgetStateColor? foregroundColor;
 
   /// The background color of the tab if it is selected.
-  final WidgetStateProperty<Color>? selectedForegroundColor;
+  final WidgetStateColor? selectedForegroundColor;
 
   /// The outline color of the tab.
-  final WidgetStateProperty<Color>? outlineColor;
+  final WidgetStateColor? outlineColor;
 
   /// Whether the tab is disabled or not.
   ///
@@ -236,25 +239,39 @@ class Tab extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(FlagProperty(
-        'disabled',
-        value: disabled,
-        defaultValue: false,
-        ifFalse: 'enabled',
-      ))
-      ..add(ObjectFlagProperty(
-        'onClosed',
-        onClosed,
-        ifNull: 'not closeable',
-      ))
-      ..add(DiagnosticsProperty<WidgetStateProperty<Color>>(
-          'backgroundColor', backgroundColor))
-      ..add(DiagnosticsProperty<WidgetStateProperty<Color>>(
-          'selectedBackgroundColor', selectedBackgroundColor))
-      ..add(DiagnosticsProperty<WidgetStateProperty<Color>>(
-          'foregroundColor', foregroundColor))
-      ..add(DiagnosticsProperty<WidgetStateProperty<Color>>(
-          'selectedForegroundColor', selectedForegroundColor))
+      ..add(
+        FlagProperty(
+          'disabled',
+          value: disabled,
+          defaultValue: false,
+          ifFalse: 'enabled',
+        ),
+      )
+      ..add(ObjectFlagProperty('onClosed', onClosed, ifNull: 'not closeable'))
+      ..add(
+        DiagnosticsProperty<WidgetStateColor>(
+          'backgroundColor',
+          backgroundColor,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<WidgetStateColor>(
+          'selectedBackgroundColor',
+          selectedBackgroundColor,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<WidgetStateColor>(
+          'foregroundColor',
+          foregroundColor,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<WidgetStateColor>(
+          'selectedForegroundColor',
+          selectedForegroundColor,
+        ),
+      )
       ..add(DiagnosticsProperty<Widget>('text', text))
       ..add(DiagnosticsProperty<Widget>('body', body))
       ..add(DiagnosticsProperty<Widget>('icon', icon))
@@ -268,25 +285,26 @@ class Tab extends StatefulWidget {
 
 class TabState extends State<Tab>
     with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
-  late final controller = AnimationController(vsync: this);
+  late final _animationController = AnimationController(vsync: this);
 
+  /// The data of the tab.
   TabData get tab => TabData.of(context);
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (controller.duration == null) {
-      controller
+    if (_animationController.duration == null) {
+      _animationController
         ..duration = tab.animationDuration
         ..forward();
     } else {
-      controller.duration = tab.animationDuration;
+      _animationController.duration = tab.animationDuration;
     }
   }
 
   @override
   void dispose() {
-    controller.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
@@ -315,8 +333,9 @@ class TabState extends State<Tab>
       gestures: widget.gestures,
       builder: (context, states) {
         // https://github.com/microsoft/microsoft-ui-xaml/blob/main/dev/TabView/TabView_themeresources.xaml#L15-L19
-        final foregroundColor =
-            WidgetStateProperty.resolveWith<Color>((states) {
+        final foregroundColor = WidgetStateProperty.resolveWith<Color>((
+          states,
+        ) {
           if (tab.selected) {
             return res.textFillColorPrimary;
           } else if (states.isPressed) {
@@ -331,8 +350,9 @@ class TabState extends State<Tab>
         }).resolve(states);
 
         /// https://github.com/microsoft/microsoft-ui-xaml/blob/main/dev/TabView/TabView_themeresources.xaml#L10-L14
-        final backgroundColor =
-            WidgetStateProperty.resolveWith<Color>((states) {
+        final backgroundColor = WidgetStateProperty.resolveWith<Color>((
+          states,
+        ) {
           if (tab.selected) {
             return res.solidBackgroundFillColorTertiary;
           } else if (states.isPressed) {
@@ -347,128 +367,129 @@ class TabState extends State<Tab>
         }).resolve(states);
 
         const borderRadius = BorderRadius.vertical(top: Radius.circular(6));
-        Widget child = FocusBorder(
-          focused: states.isFocused,
-          renderOutside: false,
-          style: const FocusThemeData(borderRadius: borderRadius),
-          child: Container(
-            key: widget._tabKey,
-            height: _kTileHeight,
-            constraints: tab.tabWidthBehavior == TabWidthBehavior.sizeToContent
-                ? const BoxConstraints(minHeight: 28.0)
-                : const BoxConstraints(
-                    maxWidth: _kMaxTileWidth,
-                    minHeight: 28.0,
-                  ),
-            padding: tab.selected
-                ? const EdgeInsetsDirectional.only(
-                    start: 9,
-                    top: 3,
-                    end: 5,
-                    bottom: 4,
-                  )
-                : const EdgeInsetsDirectional.only(
-                    start: 8,
-                    top: 3,
-                    end: 4,
-                    bottom: 3,
-                  ),
-            decoration: BoxDecoration(
-              borderRadius: borderRadius,
-              // if selected, the background is painted by _TabPainter
-              color: (tab.selected
-                          ? widget.selectedBackgroundColor
-                          : widget.backgroundColor)
-                      ?.resolve(states) ??
-                  backgroundColor,
-            ),
-            child: () {
-              final result = ClipRect(
-                child: DefaultTextStyle.merge(
-                  style: (theme.typography.body ?? const TextStyle()).copyWith(
-                    fontSize: 12.0,
-                    fontWeight: tab.selected ? FontWeight.w600 : null,
-                    color: (tab.selected
-                                ? widget.selectedForegroundColor
-                                : widget.foregroundColor)
-                            ?.resolve(states) ??
-                        foregroundColor,
-                  ),
-                  child: IconTheme.merge(
-                    data: IconThemeData(
-                      color: (tab.selected
-                                  ? widget.selectedForegroundColor
-                                  : widget.foregroundColor)
-                              ?.resolve(states) ??
-                          foregroundColor,
-                      size: 16.0,
-                    ),
-                    child: Row(mainAxisSize: MainAxisSize.min, children: [
-                      if (widget.icon != null)
-                        Padding(
-                          padding: const EdgeInsetsDirectional.only(end: 10.0),
-                          child: widget.icon!,
-                        ),
-                      if (tab.tabWidthBehavior != TabWidthBehavior.compact ||
-                          (tab.tabWidthBehavior == TabWidthBehavior.compact &&
-                              tab.selected))
-                        Flexible(
-                          fit: tab.tabWidthBehavior == TabWidthBehavior.equal
-                              ? FlexFit.tight
-                              : FlexFit.loose,
-                          child: Padding(
-                            padding: const EdgeInsetsDirectional.only(end: 4.0),
-                            child: DefaultTextStyle.merge(
-                              softWrap: false,
-                              maxLines: 1,
-                              overflow: TextOverflow.clip,
-                              style: const TextStyle(fontSize: 12.0),
-                              child: widget.text,
-                            ),
+        Widget tabContainer = Container(
+          key: widget._tabKey,
+          height: _kTileHeight,
+          constraints: tab.tabWidthBehavior == TabWidthBehavior.sizeToContent
+              ? const BoxConstraints(minHeight: 28)
+              : const BoxConstraints(maxWidth: _kMaxTileWidth, minHeight: 28),
+          padding: tab.selected
+              ? const EdgeInsetsDirectional.only(
+                  start: 9,
+                  top: 3,
+                  end: 5,
+                  bottom: 4,
+                )
+              : const EdgeInsetsDirectional.only(
+                  start: 8,
+                  top: 3,
+                  end: 4,
+                  bottom: 3,
+                ),
+          decoration: BoxDecoration(
+            borderRadius: borderRadius,
+            // if selected, the background is painted by _TabPainter
+            color:
+                (tab.selected
+                        ? widget.selectedBackgroundColor
+                        : widget.backgroundColor)
+                    ?.resolve(states) ??
+                backgroundColor,
+          ),
+          child: ClipRect(
+            child: DefaultTextStyle.merge(
+              style: (theme.typography.body ?? const TextStyle()).copyWith(
+                fontSize: 12,
+                fontWeight: tab.selected ? FontWeight.w600 : null,
+                color:
+                    (tab.selected
+                            ? widget.selectedForegroundColor
+                            : widget.foregroundColor)
+                        ?.resolve(states) ??
+                    foregroundColor,
+              ),
+              child: IconTheme.merge(
+                data: IconThemeData(
+                  color:
+                      (tab.selected
+                              ? widget.selectedForegroundColor
+                              : widget.foregroundColor)
+                          ?.resolve(states) ??
+                      foregroundColor,
+                  size: 16,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (widget.icon != null)
+                      Padding(
+                        padding: const EdgeInsetsDirectional.only(end: 10),
+                        child: widget.icon,
+                      ),
+                    if (tab.tabWidthBehavior != TabWidthBehavior.compact ||
+                        (tab.tabWidthBehavior == TabWidthBehavior.compact &&
+                            tab.selected))
+                      Flexible(
+                        fit: tab.tabWidthBehavior == TabWidthBehavior.equal
+                            ? FlexFit.tight
+                            : FlexFit.loose,
+                        child: Padding(
+                          padding: const EdgeInsetsDirectional.only(end: 4),
+                          child: DefaultTextStyle.merge(
+                            softWrap: false,
+                            maxLines: 1,
+                            overflow: TextOverflow.clip,
+                            style: const TextStyle(fontSize: 12),
+                            child: widget.text,
                           ),
                         ),
-                      if (widget.onClosed != null &&
-                          widget.closeIcon != null &&
-                          (tab.visibilityMode ==
-                                  CloseButtonVisibilityMode.always ||
-                              (tab.visibilityMode ==
-                                      CloseButtonVisibilityMode.onHover &&
-                                  states.isHovered)))
-                        Padding(
-                          padding: const EdgeInsetsDirectional.only(start: 4.0),
-                          child: FocusTheme(
-                            data: const FocusThemeData(
-                              primaryBorder: BorderSide.none,
-                              secondaryBorder: BorderSide.none,
-                            ),
-                            child: Tooltip(
-                              message: localizations.closeTabLabel,
-                              child: SizedBox(
-                                height: 24.0,
-                                width: 32.0,
-                                child: IconButton(
-                                  icon: widget.closeIcon!,
-                                  onPressed: tab.onClose,
-                                  focusable: false,
-                                ),
+                      ),
+                    if (widget.onClosed != null &&
+                        widget.closeIcon != null &&
+                        (tab.visibilityMode ==
+                                CloseButtonVisibilityMode.always ||
+                            (tab.visibilityMode ==
+                                    CloseButtonVisibilityMode.onHover &&
+                                states.isHovered)))
+                      Padding(
+                        padding: const EdgeInsetsDirectional.only(start: 4),
+                        child: FocusTheme(
+                          data: const FocusThemeData(
+                            primaryBorder: BorderSide.none,
+                            secondaryBorder: BorderSide.none,
+                          ),
+                          child: Tooltip(
+                            message: localizations.closeTabLabel,
+                            child: SizedBox(
+                              height: 24,
+                              width: 32,
+                              child: IconButton(
+                                icon: widget.closeIcon!,
+                                onPressed: tab.onClose,
+                                focusable: false,
                               ),
                             ),
                           ),
                         ),
-                    ]),
-                  ),
+                      ),
+                  ],
                 ),
-              );
-              if (tab.reorderIndex != null) {
-                return ReorderableDragStartListener(
-                  index: tab.reorderIndex!,
-                  enabled: !widget.disabled,
-                  child: result,
-                );
-              }
-              return result;
-            }(),
+              ),
+            ),
           ),
+        );
+        if (tab.reorderIndex != null) {
+          tabContainer = ReorderableDragStartListener(
+            index: tab.reorderIndex!,
+            enabled: !widget.disabled,
+            child: tabContainer,
+          );
+        }
+        Widget child = FocusBorder(
+          focused: states.isFocused,
+          renderOutside: false,
+          style: const FocusThemeData(borderRadius: borderRadius),
+          child: tabContainer,
         );
         if (text != null) {
           child = Tooltip(
@@ -480,7 +501,9 @@ class TabState extends State<Tab>
         if (tab.selected) {
           child = CustomPaint(
             painter: _TabPainter(
-                backgroundColor, widget.outlineColor?.resolve(states)),
+              backgroundColor,
+              widget.outlineColor?.resolve(states),
+            ),
             child: child,
           );
         }
@@ -545,7 +568,11 @@ class _TabViewScrollBehavior extends ScrollBehavior {
   const _TabViewScrollBehavior();
 
   @override
-  Widget buildScrollbar(context, child, details) {
+  Widget buildScrollbar(
+    BuildContext context,
+    Widget child,
+    ScrollableDetails details,
+  ) {
     return child;
   }
 }

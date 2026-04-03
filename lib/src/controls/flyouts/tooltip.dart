@@ -7,17 +7,65 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 
 /// A tooltip is a popup that contains additional information about another
-/// control or object. Tooltips display automatically when the user moves focus
-/// to, presses and holds, or hovers the pointer over the associated control.
-/// The tooltip disappears when the user moves focus from, stops pressing on, or
-/// stops hovering the pointer over the associated control (unless the pointer
-/// is moving towards the tooltip).
+/// control or object.
 ///
-/// ![Tooltip Preview](https://docs.microsoft.com/en-us/windows/uwp/design/controls-and-patterns/images/controls/tool-tip.png)
+/// Tooltips display automatically when the user moves focus to, presses and holds,
+/// or hovers the pointer over the associated control. The tooltip disappears when
+/// the user moves focus from, stops pressing on, or stops hovering the pointer
+/// over the associated control.
+///
+/// ![Tooltip Preview](https://learn.microsoft.com/en-us/windows/apps/design/controls/images/controls/tool-tip.png)
+///
+/// {@tool snippet}
+/// This example shows a basic tooltip with a text message:
+///
+/// ```dart
+/// Tooltip(
+///   message: 'This is a tooltip',
+///   child: IconButton(
+///     icon: Icon(WindowsIcons.info),
+///     onPressed: () {},
+///   ),
+/// )
+/// ```
+/// {@end-tool}
+///
+/// {@tool snippet}
+/// This example shows a tooltip with rich text content:
+///
+/// ```dart
+/// Tooltip(
+///   richMessage: TextSpan(
+///     children: [
+///       TextSpan(text: 'Bold text', style: TextStyle(fontWeight: FontWeight.bold)),
+///       TextSpan(text: ' and normal text'),
+///     ],
+///   ),
+///   child: Button(
+///     child: Text('Hover me'),
+///     onPressed: () {},
+///   ),
+/// )
+/// ```
+/// {@end-tool}
+///
+/// ## Tooltip behavior
+///
+/// * On desktop: Tooltips appear after hovering for a short duration
+/// * On touch devices: Tooltips appear on long press
+/// * Tooltips automatically dismiss when the user interacts elsewhere
+///
+/// ## Accessibility
+///
+/// Tooltips are automatically announced by screen readers. The [message] or
+/// [richMessage] content is used as the accessible description for the [child]
+/// widget, unless [excludeFromSemantics] is set to true.
 ///
 /// See also:
 ///
-///   * [Flyout], which creates a popup with interactive content
+///  * [Flyout], which creates a popup with interactive content
+///  * [TeachingTip], for onboarding experiences and feature discovery
+///  * <https://learn.microsoft.com/en-us/windows/apps/design/controls/tooltips>
 class Tooltip extends StatefulWidget {
   /// Creates a tooltip.
   ///
@@ -34,9 +82,9 @@ class Tooltip extends StatefulWidget {
     this.triggerMode,
     this.enableFeedback,
   }) : assert(
-          (message == null) != (richMessage == null),
-          'Either `message` or `richMessage` must be specified',
-        );
+         (message == null) != (richMessage == null),
+         'Either `message` or `richMessage` must be specified',
+       );
 
   /// The text to display in the tooltip.
   ///
@@ -95,11 +143,11 @@ class Tooltip extends StatefulWidget {
   ///  * [Feedback], for providing platform-specific feedback to certain actions.
   final bool? enableFeedback;
 
-  static final List<_TooltipState> _openedTooltips = <_TooltipState>[];
+  static final List<TooltipState> _openedTooltips = <TooltipState>[];
 
   // Causes any current tooltips to be concealed. Only called for mouse hover enter
   // detections. Won't conceal the supplied tooltip.
-  static void _concealOtherTooltips(_TooltipState current) {
+  static void _concealOtherTooltips(TooltipState current) {
     if (_openedTooltips.isNotEmpty) {
       // Avoid concurrent modification.
       final openedTooltips = _openedTooltips.toList();
@@ -137,7 +185,7 @@ class Tooltip extends StatefulWidget {
   }
 
   @override
-  State<Tooltip> createState() => _TooltipState();
+  State<Tooltip> createState() => TooltipState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -146,42 +194,56 @@ class Tooltip extends StatefulWidget {
       ..add(StringProperty('message', message))
       ..add(DiagnosticsProperty<InlineSpan>('richMessage', richMessage))
       ..add(DiagnosticsProperty<TooltipThemeData>('style', style))
-      ..add(FlagProperty(
-        'excludeFromSemantics',
-        value: excludeFromSemantics,
-        ifTrue: 'excluded',
-        defaultValue: false,
-      ))
-      ..add(FlagProperty(
-        'useMousePosition',
-        value: useMousePosition,
-        ifFalse: 'use child position',
-        defaultValue: true,
-      ))
-      ..add(FlagProperty(
-        'displayHorizontally',
-        value: displayHorizontally,
-        ifTrue: 'display horizontally',
-        defaultValue: false,
-      ))
-      ..add(EnumProperty<TooltipTriggerMode>(
-        'triggerMode',
-        triggerMode,
-        defaultValue: _TooltipState._defaultTriggerMode,
-      ))
-      ..add(FlagProperty(
-        'enableFeedback',
-        value: enableFeedback,
-        ifFalse: 'feedback disabled',
-        defaultValue: true,
-      ));
+      ..add(
+        FlagProperty(
+          'excludeFromSemantics',
+          value: excludeFromSemantics,
+          ifTrue: 'excluded',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'useMousePosition',
+          value: useMousePosition,
+          ifFalse: 'use child position',
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'displayHorizontally',
+          value: displayHorizontally,
+          ifTrue: 'display horizontally',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        EnumProperty<TooltipTriggerMode>(
+          'triggerMode',
+          triggerMode,
+          defaultValue: TooltipState._defaultTriggerMode,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'enableFeedback',
+          value: enableFeedback,
+          ifFalse: 'feedback disabled',
+          defaultValue: true,
+        ),
+      );
   }
 }
 
-class _TooltipState extends State<Tooltip> with SingleTickerProviderStateMixin {
-  static const double _defaultVerticalOffset = 24.0;
+/// The state for a [Tooltip] widget.
+///
+/// This class manages the tooltip's visibility, animations, and positioning.
+/// It handles both mouse hover and touch interactions.
+class TooltipState extends State<Tooltip> with SingleTickerProviderStateMixin {
+  static const double _defaultVerticalOffset = 24;
   static const bool _defaultPreferBelow = true;
-  static const EdgeInsetsGeometry _defaultMargin = EdgeInsets.zero;
+  static const EdgeInsetsGeometry _defaultMargin = EdgeInsetsDirectional.zero;
   static const Duration _fadeInDuration = Duration(milliseconds: 150);
   static const Duration _fadeOutDuration = Duration(milliseconds: 75);
   static const Duration _defaultShowDuration = Duration(milliseconds: 1500);
@@ -191,29 +253,30 @@ class _TooltipState extends State<Tooltip> with SingleTickerProviderStateMixin {
       TooltipTriggerMode.longPress;
   static const bool _defaultEnableFeedback = true;
 
-  late EdgeInsetsGeometry padding;
-  late EdgeInsetsGeometry margin;
-  late Decoration decoration;
-  late TextStyle textStyle;
-  late double verticalOffset;
-  late bool preferBelow;
-  late bool excludeFromSemantics;
+  // From InheritedWidgets - cached in didChangeDependencies
+  late bool _visible;
+  late TooltipThemeData _tooltipTheme;
+
   late AnimationController _controller;
   OverlayEntry? _entry;
   Timer? _dismissTimer;
   Timer? _showTimer;
-  late Duration showDuration;
-  late Duration hoverShowDuration;
-  late Duration waitDuration;
-  late bool _mouseIsConnected;
   bool _pressActivated = false;
-  Offset? mousePosition;
-  late TooltipTriggerMode triggerMode;
-  late bool enableFeedback;
-  late double? maxWidth;
+
+  Offset? _mousePosition;
   late bool _isConcealed;
   late bool _forceRemoval;
-  late bool _visible;
+
+  Duration get _showDuration =>
+      _tooltipTheme.showDuration ?? _defaultShowDuration;
+  Duration get _hoverShowDuration => _defaultHoverShowDuration;
+  Duration get _waitDuration =>
+      _tooltipTheme.waitDuration ?? _defaultWaitDuration;
+  TooltipTriggerMode get _triggerMode =>
+      widget.triggerMode ?? _defaultTriggerMode;
+  bool get _enableFeedback => widget.enableFeedback ?? _defaultEnableFeedback;
+  bool get _mouseIsConnected =>
+      RendererBinding.instance.mouseTracker.mouseIsConnected;
 
   /// The plain text message for this tooltip.
   ///
@@ -226,38 +289,23 @@ class _TooltipState extends State<Tooltip> with SingleTickerProviderStateMixin {
     super.initState();
     _isConcealed = false;
     _forceRemoval = false;
-    _mouseIsConnected = RendererBinding.instance.mouseTracker.mouseIsConnected;
     _controller = AnimationController(
       duration: _fadeInDuration,
       reverseDuration: _fadeOutDuration,
       vsync: this,
     )..addStatusListener(_handleStatusChanged);
-    // Listen to see when a mouse is added.
-    RendererBinding.instance.mouseTracker
-        .addListener(_handleMouseTrackerChange);
     // Listen to global pointer events so that we can hide a tooltip immediately
     // if some other control is clicked on.
-    GestureBinding.instance.pointerRouter.addGlobalRoute(_handlePointerEvent);
+    GestureBinding.instance.pointerRouter.addGlobalRoute(
+      _handleGlobalPointerEvent,
+    );
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _visible = TooltipVisibility.of(context);
-  }
-
-  // Forces a rebuild if a mouse has been added or removed.
-  void _handleMouseTrackerChange() {
-    if (!mounted) {
-      return;
-    }
-    final mouseIsConnected =
-        RendererBinding.instance.mouseTracker.mouseIsConnected;
-    if (mouseIsConnected != _mouseIsConnected) {
-      setState(() {
-        _mouseIsConnected = mouseIsConnected;
-      });
-    }
+    _tooltipTheme = TooltipTheme.of(context);
   }
 
   void _handleStatusChanged(AnimationStatus status) {
@@ -269,7 +317,7 @@ class _TooltipState extends State<Tooltip> with SingleTickerProviderStateMixin {
     }
   }
 
-  void _dismissTooltip({bool immediately = false}) async {
+  Future<void> _dismissTooltip({bool immediately = false}) async {
     _showTimer?.cancel();
     _showTimer = null;
     if (immediately) {
@@ -280,9 +328,9 @@ class _TooltipState extends State<Tooltip> with SingleTickerProviderStateMixin {
     // still concealed or not.
     _forceRemoval = true;
     if (_pressActivated) {
-      _dismissTimer ??= Timer(showDuration, _controller.reverse);
+      _dismissTimer ??= Timer(_showDuration, _controller.reverse);
     } else {
-      _dismissTimer ??= Timer(hoverShowDuration, _controller.reverse);
+      _dismissTimer ??= Timer(_hoverShowDuration, _controller.reverse);
     }
     _pressActivated = false;
   }
@@ -294,7 +342,7 @@ class _TooltipState extends State<Tooltip> with SingleTickerProviderStateMixin {
       ensureTooltipVisible();
       return;
     }
-    _showTimer ??= Timer(waitDuration, ensureTooltipVisible);
+    _showTimer ??= Timer(_waitDuration, ensureTooltipVisible);
   }
 
   void _concealTooltip() {
@@ -327,7 +375,7 @@ class _TooltipState extends State<Tooltip> with SingleTickerProviderStateMixin {
       Overlay.of(context, debugRequiredFor: widget).insert(_entry!);
     }
     SemanticsService.tooltip(_tooltipMessage);
-    _controller.forward(from: 0.0);
+    _controller.forward(from: 0);
   }
 
   /// Shows the tooltip if it is not already visible.
@@ -358,14 +406,14 @@ class _TooltipState extends State<Tooltip> with SingleTickerProviderStateMixin {
     return true;
   }
 
-  static final Set<_TooltipState> _mouseIn = <_TooltipState>{};
+  static final Set<TooltipState> _mouseIn = <TooltipState>{};
 
   void _handleMouseEnter() {
     _showTooltip();
   }
 
   void _handleMouseExit({bool immediately = false}) {
-    mousePosition = null;
+    _mousePosition = null;
     // If the tip is currently covered, we can just remove it without waiting.
     _dismissTooltip(immediately: _isConcealed || immediately);
   }
@@ -379,14 +427,28 @@ class _TooltipState extends State<Tooltip> with SingleTickerProviderStateMixin {
 
     final box = context.findRenderObject()! as RenderBox;
     Offset target;
-    if (_mouseIsConnected && widget.useMousePosition && mousePosition != null) {
-      target = mousePosition!;
+    if (_mouseIsConnected &&
+        widget.useMousePosition &&
+        _mousePosition != null) {
+      target = _mousePosition!;
     } else {
       target = box.localToGlobal(
         box.size.center(Offset.zero),
         ancestor: overlayState.context.findRenderObject(),
       );
     }
+
+    // Merge widget style with cached theme
+    final tooltipTheme = _tooltipTheme.merge(widget.style);
+
+    // Compute default decoration based on current theme
+    final theme = FluentTheme.of(context);
+    final defaultTextStyle = theme.typography.body!;
+    final defaultDecoration = BoxDecoration(
+      color: theme.menuColor,
+      borderRadius: const BorderRadius.all(Radius.circular(8)),
+      border: Border.all(color: theme.resources.surfaceStrokeColorFlyout),
+    );
 
     // We create this widget outside of the overlay entry's builder to prevent
     // updated values from happening to leak into the overlay when the overlay
@@ -395,19 +457,19 @@ class _TooltipState extends State<Tooltip> with SingleTickerProviderStateMixin {
       textDirection: Directionality.of(context),
       child: _TooltipOverlay(
         richMessage: widget.richMessage ?? TextSpan(text: widget.message),
-        padding: padding,
-        margin: margin,
-        decoration: decoration,
-        textStyle: textStyle,
+        padding: tooltipTheme.padding ?? EdgeInsetsDirectional.zero,
+        margin: tooltipTheme.margin ?? _defaultMargin,
+        decoration: tooltipTheme.decoration ?? defaultDecoration,
+        textStyle: tooltipTheme.textStyle ?? defaultTextStyle,
         animation: CurvedAnimation(
           parent: _controller,
           curve: Curves.fastOutSlowIn,
         ),
         target: target,
-        verticalOffset: verticalOffset,
-        preferBelow: preferBelow,
+        verticalOffset: tooltipTheme.verticalOffset ?? _defaultVerticalOffset,
+        preferBelow: tooltipTheme.preferBelow ?? _defaultPreferBelow,
         displayHorizontally: widget.displayHorizontally,
-        maxWidth: maxWidth,
+        maxWidth: tooltipTheme.maxWidth,
       ),
     );
     _entry = OverlayEntry(builder: (_) => overlay);
@@ -441,7 +503,7 @@ class _TooltipState extends State<Tooltip> with SingleTickerProviderStateMixin {
     }
   }
 
-  void _handlePointerEvent(PointerEvent event) {
+  void _handleGlobalPointerEvent(PointerEvent event) {
     if (_entry == null) {
       return;
     }
@@ -464,10 +526,9 @@ class _TooltipState extends State<Tooltip> with SingleTickerProviderStateMixin {
   @override
   void dispose() {
     _removeEntry();
-    GestureBinding.instance.pointerRouter
-        .removeGlobalRoute(_handlePointerEvent);
-    RendererBinding.instance.mouseTracker
-        .removeListener(_handleMouseTrackerChange);
+    GestureBinding.instance.pointerRouter.removeGlobalRoute(
+      _handleGlobalPointerEvent,
+    );
     _controller.dispose();
     super.dispose();
   }
@@ -475,8 +536,8 @@ class _TooltipState extends State<Tooltip> with SingleTickerProviderStateMixin {
   void _handlePress() {
     _pressActivated = true;
     final tooltipCreated = ensureTooltipVisible();
-    if (tooltipCreated && enableFeedback) {
-      if (triggerMode == TooltipTriggerMode.longPress) {
+    if (tooltipCreated && _enableFeedback) {
+      if (_triggerMode == TooltipTriggerMode.longPress) {
         Feedback.forLongPress(context);
       } else {
         Feedback.forTap(context);
@@ -495,33 +556,7 @@ class _TooltipState extends State<Tooltip> with SingleTickerProviderStateMixin {
     assert(debugCheckHasFluentTheme(context));
     assert(debugCheckHasDirectionality(context));
 
-    final theme = FluentTheme.of(context);
-    final tooltipTheme = TooltipTheme.of(context).merge(widget.style);
-    final TextStyle defaultTextStyle;
-    final BoxDecoration defaultDecoration;
-    defaultTextStyle = theme.typography.body!;
-    defaultDecoration = BoxDecoration(
-      color: theme.menuColor,
-      borderRadius: const BorderRadius.all(Radius.circular(8)),
-      border: Border.all(
-        color: theme.resources.surfaceStrokeColorFlyout,
-      ),
-    );
-
-    padding = tooltipTheme.padding ?? EdgeInsets.zero;
-    margin = tooltipTheme.margin ?? _defaultMargin;
-    verticalOffset = tooltipTheme.verticalOffset ?? _defaultVerticalOffset;
-    preferBelow = tooltipTheme.preferBelow ?? _defaultPreferBelow;
-    excludeFromSemantics = widget.excludeFromSemantics;
-    decoration = tooltipTheme.decoration ?? defaultDecoration;
-    textStyle = tooltipTheme.textStyle ?? defaultTextStyle;
-    waitDuration = tooltipTheme.waitDuration ?? _defaultWaitDuration;
-    showDuration = tooltipTheme.showDuration ?? _defaultShowDuration;
-    hoverShowDuration = _defaultHoverShowDuration;
-    triggerMode = widget.triggerMode ?? _defaultTriggerMode;
-    enableFeedback = widget.enableFeedback ?? _defaultEnableFeedback;
-    maxWidth = tooltipTheme.maxWidth;
-
+    final excludeFromSemantics = widget.excludeFromSemantics;
     Widget result = Semantics(
       label: excludeFromSemantics ? null : _tooltipMessage,
       child: widget.child,
@@ -529,25 +564,22 @@ class _TooltipState extends State<Tooltip> with SingleTickerProviderStateMixin {
 
     // Only check for gestures if tooltip should be visible.
     if (_visible) {
-      result = GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onLongPress:
-            (triggerMode == TooltipTriggerMode.longPress) ? _handlePress : null,
-        onTap: (triggerMode == TooltipTriggerMode.tap) ? _handlePress : null,
-        excludeFromSemantics: true,
-        child: result,
-      );
-      // Only check for hovering if there is a mouse connected.
-      if (_mouseIsConnected) {
-        result = MouseRegion(
-          onEnter: (_) => _handleMouseEnter(),
-          onHover: (event) {
-            mousePosition = event.position;
-          },
-          onExit: (_) => _handleMouseExit(),
+      result = MouseRegion(
+        onEnter: (_) => _handleMouseEnter(),
+        onHover: (event) {
+          _mousePosition = event.position;
+        },
+        onExit: (_) => _handleMouseExit(),
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onLongPress: (_triggerMode == TooltipTriggerMode.longPress)
+              ? _handlePress
+              : null,
+          onTap: (_triggerMode == TooltipTriggerMode.tap) ? _handlePress : null,
+          excludeFromSemantics: true,
           child: result,
-        );
-      }
+        ),
+      );
     }
 
     return result;
@@ -560,41 +592,35 @@ class _TooltipState extends State<Tooltip> with SingleTickerProviderStateMixin {
 /// Values specified here are used for [Tooltip] properties that are not
 /// given an explicit non-null value.
 class TooltipTheme extends InheritedTheme {
-  /// Creates a tooltip theme that controls the configurations for
-  /// [Tooltip].
-  const TooltipTheme({
-    super.key,
-    required this.data,
-    required super.child,
-  });
+  /// Creates a theme that controls how descendant [Tooltip]s should look like.
+  const TooltipTheme({required this.data, required super.child, super.key});
 
   /// The properties for descendant [Tooltip] widgets.
   final TooltipThemeData data;
 
-  /// Creates a button theme that controls how descendant [InfoBar]s should
-  /// look like, and merges in the current toggle button theme, if any.
+  /// Creates a theme that merges the nearest [TooltipTheme] with [data].
   static Widget merge({
-    Key? key,
     required TooltipThemeData data,
     required Widget child,
+    Key? key,
   }) {
-    return Builder(builder: (BuildContext context) {
-      return TooltipTheme(
-        key: key,
-        data: _getInheritedThemeData(context).merge(data),
-        child: child,
-      );
-    });
+    return Builder(
+      builder: (context) {
+        return TooltipTheme(
+          key: key,
+          data: TooltipTheme.of(context).merge(data),
+          child: child,
+        );
+      },
+    );
   }
 
-  static TooltipThemeData _getInheritedThemeData(BuildContext context) {
-    final theme = context.dependOnInheritedWidgetOfExactType<TooltipTheme>();
-    return theme?.data ?? FluentTheme.of(context).tooltipTheme;
-  }
-
-  /// Returns the [data] from the closest [TooltipTheme] ancestor. If there is
-  /// no ancestor, it returns [FluentThemeData.tooltipTheme]. Applications can assume
-  /// that the returned value will not be null.
+  /// Returns the closest [TooltipThemeData] which encloses the given context.
+  ///
+  /// Resolution order:
+  /// 1. Defaults from [TooltipThemeData.standard]
+  /// 2. Global theme from [FluentThemeData.tooltipTheme]
+  /// 3. Local [TooltipTheme] ancestor
   ///
   /// Typical usage is as follows:
   ///
@@ -602,9 +628,13 @@ class TooltipTheme extends InheritedTheme {
   /// TooltipThemeData theme = TooltipTheme.of(context);
   /// ```
   static TooltipThemeData of(BuildContext context) {
-    return TooltipThemeData.standard(FluentTheme.of(context)).merge(
-      _getInheritedThemeData(context),
-    );
+    assert(debugCheckHasFluentTheme(context));
+    final theme = FluentTheme.of(context);
+    final inheritedTheme = context
+        .dependOnInheritedWidgetOfExactType<TooltipTheme>();
+    return TooltipThemeData.standard(
+      theme,
+    ).merge(theme.tooltipTheme).merge(inheritedTheme?.data);
   }
 
   @override
@@ -616,6 +646,10 @@ class TooltipTheme extends InheritedTheme {
   bool updateShouldNotify(TooltipTheme oldWidget) => data != oldWidget.data;
 }
 
+/// Theme data for [Tooltip] widgets.
+///
+/// This class defines the visual appearance of tooltips, including their
+/// size, positioning, colors, and timing behavior.
 class TooltipThemeData with Diagnosticable {
   /// The height of the tooltip's [child].
   ///
@@ -679,8 +713,13 @@ class TooltipThemeData with Diagnosticable {
   final TextStyle? textStyle;
 
   /// If non-null, the maximum width of the tooltip text before it wraps.
+  ///
+  /// Defaults to double.infinity.
+  ///
+  /// If the tooltip text is longer than this width, it will wrap to the next line.
   final double? maxWidth;
 
+  /// Creates a theme data for [Tooltip] widgets.
   const TooltipThemeData({
     this.height,
     this.verticalOffset,
@@ -694,12 +733,16 @@ class TooltipThemeData with Diagnosticable {
     this.maxWidth,
   });
 
+  /// Creates the standard [TooltipThemeData] based on the given [theme].
   factory TooltipThemeData.standard(FluentThemeData theme) {
     return TooltipThemeData(
-      height: 32.0,
-      verticalOffset: 24.0,
+      height: (32 + theme.visualDensity.baseSizeAdjustment.dy).clamp(
+        0.0,
+        double.infinity,
+      ),
+      verticalOffset: 24,
       preferBelow: false,
-      margin: EdgeInsets.zero,
+      margin: EdgeInsetsDirectional.zero,
       padding: () {
         switch (defaultTargetPlatform) {
           case TargetPlatform.macOS:
@@ -707,19 +750,19 @@ class TooltipThemeData with Diagnosticable {
           case TargetPlatform.windows:
             return const EdgeInsetsDirectional.fromSTEB(8, 5, 8, 7);
           default:
-            return const EdgeInsets.symmetric(horizontal: 16.0);
+            return const EdgeInsetsDirectional.symmetric(horizontal: 16);
         }
       }(),
       showDuration: const Duration(milliseconds: 1500),
       waitDuration: const Duration(seconds: 1),
       textStyle: theme.typography.caption,
       decoration: () {
-        final radius = BorderRadius.circular(4.0);
+        final radius = BorderRadius.circular(4);
         final shadow = [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.2),
             offset: const Offset(1, 1),
-            blurRadius: 10.0,
+            blurRadius: 10,
           ),
         ];
         if (theme.brightness == Brightness.light) {
@@ -739,6 +782,11 @@ class TooltipThemeData with Diagnosticable {
     );
   }
 
+  /// Linearly interpolates between two [TooltipThemeData] objects.
+  ///
+  /// The [t] argument represents position on the timeline, with 0.0 meaning
+  /// that the interpolation has not started, returning [a], and 1.0 meaning
+  /// that the interpolation has finished, returning [b].
   static TooltipThemeData lerp(
     TooltipThemeData? a,
     TooltipThemeData? b,
@@ -750,16 +798,24 @@ class TooltipThemeData with Diagnosticable {
       margin: EdgeInsetsGeometry.lerp(a?.margin, b?.margin, t),
       padding: EdgeInsetsGeometry.lerp(a?.padding, b?.padding, t),
       preferBelow: t < 0.5 ? a?.preferBelow : b?.preferBelow,
-      showDuration: lerpDuration(a?.showDuration ?? Duration.zero,
-          b?.showDuration ?? Duration.zero, t),
+      showDuration: lerpDuration(
+        a?.showDuration ?? Duration.zero,
+        b?.showDuration ?? Duration.zero,
+        t,
+      ),
       textStyle: TextStyle.lerp(a?.textStyle, b?.textStyle, t),
       verticalOffset: lerpDouble(a?.verticalOffset, b?.verticalOffset, t),
-      waitDuration: lerpDuration(a?.waitDuration ?? Duration.zero,
-          b?.waitDuration ?? Duration.zero, t),
+      waitDuration: lerpDuration(
+        a?.waitDuration ?? Duration.zero,
+        b?.waitDuration ?? Duration.zero,
+        t,
+      ),
       maxWidth: lerpDouble(a?.maxWidth, b?.maxWidth, t),
     );
   }
 
+  /// Merges this [TooltipThemeData] with another, with the other taking
+  /// precedence.
   TooltipThemeData merge(TooltipThemeData? style) {
     if (style == null) return this;
     return TooltipThemeData(
@@ -782,17 +838,15 @@ class TooltipThemeData with Diagnosticable {
     properties
       ..add(DoubleProperty('height', height))
       ..add(DoubleProperty('verticalOffset', verticalOffset))
+      ..add(DiagnosticsProperty<EdgeInsetsGeometry>('padding', padding))
+      ..add(DiagnosticsProperty<EdgeInsetsGeometry>('margin', margin))
       ..add(
-        DiagnosticsProperty<EdgeInsetsGeometry>('padding', padding),
+        FlagProperty(
+          'preferBelow',
+          value: preferBelow,
+          ifFalse: 'prefer above',
+        ),
       )
-      ..add(
-        DiagnosticsProperty<EdgeInsetsGeometry>('margin', margin),
-      )
-      ..add(FlagProperty(
-        'preferBelow',
-        value: preferBelow,
-        ifFalse: 'prefer above',
-      ))
       ..add(DiagnosticsProperty<Decoration>('decoration', decoration))
       ..add(DiagnosticsProperty<Duration>('waitDuration', waitDuration))
       ..add(DiagnosticsProperty<Duration>('showDuration', showDuration))
@@ -867,14 +921,14 @@ class _TooltipPositionDelegate extends SingleChildLayoutDelegate {
 class _TooltipOverlay extends StatelessWidget {
   const _TooltipOverlay({
     required this.richMessage,
-    this.padding,
-    this.margin,
-    this.decoration,
-    this.textStyle,
     required this.animation,
     required this.target,
     required this.verticalOffset,
     required this.preferBelow,
+    this.padding,
+    this.margin,
+    this.decoration,
+    this.textStyle,
     this.displayHorizontally = false,
     this.maxWidth,
   });
@@ -896,19 +950,19 @@ class _TooltipOverlay extends StatelessWidget {
     assert(debugCheckHasFluentTheme(context));
     final theme = FluentTheme.of(context);
 
-    Widget result = IgnorePointer(
+    final Widget result = IgnorePointer(
       child: FadeTransition(
         opacity: animation,
         child: DefaultTextStyle.merge(
-          style: theme.typography.body!,
+          style: theme.typography.body,
           child: Container(
             decoration: decoration,
             padding: padding,
             margin: margin,
             constraints: BoxConstraints(maxWidth: maxWidth ?? double.infinity),
             child: Center(
-              widthFactor: 1.0,
-              heightFactor: 1.0,
+              widthFactor: 1,
+              heightFactor: 1,
               child: Text.rich(richMessage, style: textStyle),
             ),
           ),

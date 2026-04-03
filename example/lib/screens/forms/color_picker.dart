@@ -1,4 +1,4 @@
-import 'package:example/widgets/card_highlight.dart';
+import 'package:example/widgets/code_snippet_card.dart';
 import 'package:example/widgets/page.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 
@@ -23,7 +23,7 @@ class _ColorPickerPageState extends State<ColorPickerPage> with PageMixin {
   Axis _orientation = Axis.vertical;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return ScaffoldPage.scrollable(
       header: PageHeader(
         title: const Text('ColorPicker'),
@@ -57,54 +57,59 @@ class _ColorPickerPageState extends State<ColorPickerPage> with PageMixin {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Spectrum Shape:',
-                style: FluentTheme.of(context).typography.bodyStrong),
+            Text(
+              'Spectrum Shape:',
+              style: FluentTheme.of(context).typography.bodyStrong,
+            ),
             const SizedBox(height: 8),
-            Row(children: [
-              RadioButton(
-                checked: _spectrumShape == ColorSpectrumShape.box,
-                onChanged: (v) {
-                  if (v) {
-                    setState(() => _spectrumShape = ColorSpectrumShape.box);
-                  }
-                },
-                content: const Text('Box'),
+            RadioGroup(
+              groupValue: _spectrumShape,
+              onChanged: (final v) {
+                setState(() => _spectrumShape = v ?? _spectrumShape);
+              },
+              child: const Row(
+                spacing: 20,
+                children: [
+                  RadioButton<ColorSpectrumShape>(
+                    value: ColorSpectrumShape.box,
+                    content: Text('Box'),
+                  ),
+                  RadioButton<ColorSpectrumShape>(
+                    value: ColorSpectrumShape.ring,
+                    content: Text('Ring'),
+                  ),
+                ],
               ),
-              const SizedBox(width: 20),
-              RadioButton(
-                checked: _spectrumShape == ColorSpectrumShape.ring,
-                onChanged: (v) {
-                  if (v) {
-                    setState(() => _spectrumShape = ColorSpectrumShape.ring);
-                  }
-                },
-                content: const Text('Ring'),
-              ),
-            ]),
+            ),
             const SizedBox(height: 20),
-            Text('Layout:',
-                style: FluentTheme.of(context).typography.bodyStrong),
+            Text(
+              'Layout:',
+              style: FluentTheme.of(context).typography.bodyStrong,
+            ),
             const SizedBox(height: 8),
-            Row(children: [
-              RadioButton(
-                checked: _orientation == Axis.vertical,
-                onChanged: (v) {
-                  if (v) setState(() => _orientation = Axis.vertical);
-                },
-                content: const Text('Vertical'),
+            RadioGroup(
+              groupValue: _orientation,
+              onChanged: (final v) =>
+                  setState(() => _orientation = v ?? _orientation),
+              child: const Row(
+                spacing: 20,
+                children: [
+                  RadioButton<Axis>(
+                    value: Axis.vertical,
+                    content: Text('Vertical'),
+                  ),
+                  RadioButton<Axis>(
+                    value: Axis.horizontal,
+                    content: Text('Horizontal'),
+                  ),
+                ],
               ),
-              const SizedBox(width: 20),
-              RadioButton(
-                checked: _orientation == Axis.horizontal,
-                onChanged: (v) {
-                  if (v) setState(() => _orientation = Axis.horizontal);
-                },
-                content: const Text('Horizontal'),
-              ),
-            ]),
+            ),
             const SizedBox(height: 20),
-            Text('Options:',
-                style: FluentTheme.of(context).typography.bodyStrong),
+            Text(
+              'Options:',
+              style: FluentTheme.of(context).typography.bodyStrong,
+            ),
             const SizedBox(height: 8),
             Wrap(
               spacing: 10,
@@ -112,30 +117,34 @@ class _ColorPickerPageState extends State<ColorPickerPage> with PageMixin {
               children: [
                 Checkbox(
                   checked: _isColorPreviewVisible,
-                  onChanged: (v) => setState(() => _isColorPreviewVisible = v!),
+                  onChanged: (final v) =>
+                      setState(() => _isColorPreviewVisible = v!),
                   content: const Text('Color Preview'),
                 ),
                 Checkbox(
                   checked: _isColorSliderVisible,
-                  onChanged: (v) => setState(() => _isColorSliderVisible = v!),
+                  onChanged: (final v) =>
+                      setState(() => _isColorSliderVisible = v!),
                   content: const Text('Color Slider'),
                 ),
                 if (_orientation == Axis.vertical) ...[
                   Checkbox(
                     checked: _isMoreButtonVisible,
-                    onChanged: (v) => setState(() => _isMoreButtonVisible = v!),
+                    onChanged: (final v) =>
+                        setState(() => _isMoreButtonVisible = v!),
                     content: const Text('More Button'),
                   ),
                 ],
                 Checkbox(
                   checked: _isColorChannelTextInputVisible,
-                  onChanged: (v) =>
+                  onChanged: (final v) =>
                       setState(() => _isColorChannelTextInputVisible = v!),
                   content: const Text('Channel Text Input'),
                 ),
                 Checkbox(
                   checked: _isHexInputVisible,
-                  onChanged: (v) => setState(() => _isHexInputVisible = v!),
+                  onChanged: (final v) =>
+                      setState(() => _isHexInputVisible = v!),
                   content: const Text('Hex Input'),
                 ),
               ],
@@ -147,7 +156,7 @@ class _ColorPickerPageState extends State<ColorPickerPage> with PageMixin {
               children: [
                 Checkbox(
                   checked: _isAlphaEnabled,
-                  onChanged: (v) => setState(() {
+                  onChanged: (final v) => setState(() {
                     _isAlphaEnabled = v!;
                     if (!v) {
                       _isAlphaSliderVisible = false;
@@ -159,13 +168,13 @@ class _ColorPickerPageState extends State<ColorPickerPage> with PageMixin {
                 if (_isAlphaEnabled) ...[
                   Checkbox(
                     checked: _isAlphaSliderVisible,
-                    onChanged: (v) =>
+                    onChanged: (final v) =>
                         setState(() => _isAlphaSliderVisible = v!),
                     content: const Text('Alpha Slider'),
                   ),
                   Checkbox(
                     checked: _isAlphaTextInputVisible,
-                    onChanged: (v) =>
+                    onChanged: (final v) =>
                         setState(() => _isAlphaTextInputVisible = v!),
                     content: const Text('Alpha Text Input'),
                   ),
@@ -173,20 +182,19 @@ class _ColorPickerPageState extends State<ColorPickerPage> with PageMixin {
               ],
             ),
             const SizedBox(height: 20),
-            Text('Selected Color:',
-                style: FluentTheme.of(context).typography.bodyStrong),
-            const SizedBox(height: 8),
-            Container(
-              color: _selectedColor,
-              width: 200,
-              height: 50,
+            Text(
+              'Selected Color:',
+              style: FluentTheme.of(context).typography.bodyStrong,
             ),
+            const SizedBox(height: 8),
+            Container(color: _selectedColor, width: 200, height: 50),
           ],
         ),
         const SizedBox(height: 20),
         subtitle(content: const Text('ColorPicker Demo')),
-        CardHighlight(
-          codeSnippet: '''Color selectedColor = Colors.blue;
+        CodeSnippetCard(
+          codeSnippet: '''
+Color selectedColor = Colors.blue;
 ColorSpectrumShape spectrumShape = ColorSpectrumShape.box;
 
 ColorPicker(
@@ -199,22 +207,25 @@ ColorPicker(
   isHexInputVisible: true,
   isAlphaEnabled: false,
 ),''',
-          child: Row(children: [
-            ColorPicker(
-              color: _selectedColor,
-              onChanged: (color) => setState(() => _selectedColor = color),
-              colorSpectrumShape: _spectrumShape,
-              orientation: _orientation,
-              isMoreButtonVisible: _isMoreButtonVisible,
-              isColorSliderVisible: _isColorSliderVisible,
-              isColorChannelTextInputVisible: _isColorChannelTextInputVisible,
-              isHexInputVisible: _isHexInputVisible,
-              isColorPreviewVisible: _isColorPreviewVisible,
-              isAlphaEnabled: _isAlphaEnabled,
-              isAlphaSliderVisible: _isAlphaSliderVisible,
-              isAlphaTextInputVisible: _isAlphaTextInputVisible,
-            ),
-          ]),
+          child: Row(
+            children: [
+              ColorPicker(
+                color: _selectedColor,
+                onChanged: (final color) =>
+                    setState(() => _selectedColor = color),
+                colorSpectrumShape: _spectrumShape,
+                orientation: _orientation,
+                isMoreButtonVisible: _isMoreButtonVisible,
+                isColorSliderVisible: _isColorSliderVisible,
+                isColorChannelTextInputVisible: _isColorChannelTextInputVisible,
+                isHexInputVisible: _isHexInputVisible,
+                isColorPreviewVisible: _isColorPreviewVisible,
+                isAlphaEnabled: _isAlphaEnabled,
+                isAlphaSliderVisible: _isAlphaSliderVisible,
+                isAlphaTextInputVisible: _isAlphaTextInputVisible,
+              ),
+            ],
+          ),
         ),
       ],
     );

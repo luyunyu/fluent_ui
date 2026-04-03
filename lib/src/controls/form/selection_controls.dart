@@ -7,11 +7,15 @@ import 'package:flutter/foundation.dart';
 
 // The minimum padding from all edges of the selection toolbar to all edges of
 // the screen.
-const double _kToolbarScreenPadding = 8.0;
+const double _kToolbarScreenPadding = 8;
 
 // These values were measured from a screenshot of TextBox on Windows 11.
-const double _kToolbarWidth = 222.0;
+const double _kToolbarWidth = 222;
 
+/// A Windows-styled text selection toolbar.
+///
+/// This toolbar appears when text is selected in a [TextBox] or [EditableText],
+/// providing options like cut, copy, paste, and select all.
 class FluentTextSelectionToolbar extends StatelessWidget {
   /// {@macro flutter.material.AdaptiveTextSelectionToolbar.buttonItems}
   final List<ContextMenuButtonItem> buttonItems;
@@ -19,10 +23,11 @@ class FluentTextSelectionToolbar extends StatelessWidget {
   /// {@macro flutter.material.AdaptiveTextSelectionToolbar.anchors}
   final TextSelectionToolbarAnchors anchors;
 
+  /// Creates a Fluent text selection toolbar.
   const FluentTextSelectionToolbar({
-    super.key,
     required this.buttonItems,
     required this.anchors,
+    super.key,
   });
 
   /// Create an instance of [FluentTextSelectionToolbar] with the default
@@ -35,11 +40,12 @@ class FluentTextSelectionToolbar extends StatelessWidget {
   /// {@macro flutter.material.AdaptiveTextSelectionToolbar.buttonItems}
   /// {@macro flutter.material.AdaptiveTextSelectionToolbar.selectable}
   FluentTextSelectionToolbar.editableText({
-    super.key,
     required EditableTextState editableTextState,
-  })  : buttonItems = editableTextState.contextMenuButtonItems,
-        anchors = editableTextState.contextMenuAnchors;
+    super.key,
+  }) : buttonItems = editableTextState.contextMenuButtonItems,
+       anchors = editableTextState.contextMenuAnchors;
 
+  /// Returns the icon for a context menu button type.
   IconData? contextMenuTypeToIcon(ContextMenuButtonType type) {
     return switch (type) {
       ContextMenuButtonType.cut => FluentIcons.cut,
@@ -55,6 +61,7 @@ class FluentTextSelectionToolbar extends StatelessWidget {
     };
   }
 
+  /// Returns the localized label for a context menu button type.
   String? contextMenuTypeToLabel(
     ContextMenuButtonType type,
     BuildContext context,
@@ -74,6 +81,7 @@ class FluentTextSelectionToolbar extends StatelessWidget {
     };
   }
 
+  /// Returns the localized tooltip for a context menu button type.
   String? contextMenuTypeToTooltip(
     ContextMenuButtonType type,
     BuildContext context,
@@ -93,6 +101,7 @@ class FluentTextSelectionToolbar extends StatelessWidget {
     };
   }
 
+  /// Returns the keyboard shortcut text for a context menu button type.
   String? contextMenuTypeToShortcut(
     ContextMenuButtonType type,
     BuildContext context,
@@ -124,20 +133,35 @@ class FluentTextSelectionToolbar extends StatelessWidget {
 
     final orderedButtons = buttonItems
         .where((item) => item.type == ContextMenuButtonType.cut)
-        .followedBy(buttonItems
-            .where((item) => item.type == ContextMenuButtonType.copy))
-        .followedBy(buttonItems
-            .where((item) => item.type == ContextMenuButtonType.paste))
-        .followedBy(buttonItems.where((item) =>
-            item.type == ContextMenuButtonType.custom && item.label == 'Undo'))
-        .followedBy(buttonItems
-            .where((item) => item.type == ContextMenuButtonType.selectAll))
-        .followedBy(buttonItems.where((item) =>
-            item.type == ContextMenuButtonType.custom && item.label != 'Undo'))
+        .followedBy(
+          buttonItems.where((item) => item.type == ContextMenuButtonType.copy),
+        )
+        .followedBy(
+          buttonItems.where((item) => item.type == ContextMenuButtonType.paste),
+        )
+        .followedBy(
+          buttonItems.where(
+            (item) =>
+                item.type == ContextMenuButtonType.custom &&
+                item.label == 'Undo',
+          ),
+        )
+        .followedBy(
+          buttonItems.where(
+            (item) => item.type == ContextMenuButtonType.selectAll,
+          ),
+        )
+        .followedBy(
+          buttonItems.where(
+            (item) =>
+                item.type == ContextMenuButtonType.custom &&
+                item.label != 'Undo',
+          ),
+        )
         .toList();
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(
+      padding: EdgeInsetsDirectional.fromSTEB(
         _kToolbarScreenPadding,
         paddingAbove,
         _kToolbarScreenPadding,
@@ -151,7 +175,7 @@ class FluentTextSelectionToolbar extends StatelessWidget {
           width: _kToolbarWidth,
           child: FlyoutContent(
             child: Column(
-              spacing: 4.0,
+              spacing: 4,
               mainAxisSize: MainAxisSize.min,
               children: orderedButtons.map((item) {
                 if (item is UndoContextMenuButtonItem) {
@@ -168,7 +192,8 @@ class FluentTextSelectionToolbar extends StatelessWidget {
                   icon: contextMenuTypeToIcon(item.type),
                   shortcut: contextMenuTypeToShortcut(item.type, context) ?? '',
                   tooltip: contextMenuTypeToTooltip(item.type, context),
-                  text: item.label ??
+                  text:
+                      item.label ??
                       contextMenuTypeToLabel(item.type, context) ??
                       '',
                 );
@@ -181,23 +206,30 @@ class FluentTextSelectionToolbar extends StatelessWidget {
   }
 }
 
+/// The default [FluentTextSelectionControls] instance.
 final fluentTextSelectionControls = FluentTextSelectionControls();
 
-/// Fluent styled text selection handle controls.
+/// Windows styled text selection handle controls.
 ///
 /// Specifically does not manage the toolbar, which is left to
 /// [EditableText.contextMenuBuilder].
 class FluentTextSelectionHandleControls extends FluentTextSelectionControls
     with TextSelectionHandleControls {
+  /// Creates Fluent text selection handle controls.
   FluentTextSelectionHandleControls({super.undoHistoryController});
 }
 
+/// Windows-styled text selection controls.
+///
+/// Provides the selection handles and gesture handling for text selection.
 class FluentTextSelectionControls extends TextSelectionControls {
+  /// The undo history controller for undo/redo functionality.
   final UndoHistoryController? undoHistoryController;
 
+  /// Creates Fluent text selection controls.
   FluentTextSelectionControls({this.undoHistoryController});
 
-  /// Fluent has no text selection handles.
+  /// Windows has no text selection handles.
   @override
   Size getHandleSize(double textLineHeight) {
     return Size.zero;
@@ -225,13 +257,14 @@ class FluentTextSelectionControls extends TextSelectionControls {
       handleCut: canCut(delegate) ? () => handleCut(delegate) : null,
       handleCopy: canCopy(delegate) ? () => handleCopy(delegate) : null,
       handlePaste: canPaste(delegate) ? () => handlePaste(delegate) : null,
-      handleSelectAll:
-          canSelectAll(delegate) ? () => handleSelectAll(delegate) : null,
+      handleSelectAll: canSelectAll(delegate)
+          ? () => handleSelectAll(delegate)
+          : null,
       handleUndo: undoHistoryController == null
           ? null
           : undoHistoryController!.value.canUndo
-              ? () => undoHistoryController!.undo()
-              : null,
+          ? () => undoHistoryController!.undo()
+          : null,
       selectionMidpoint: selectionMidpoint,
       lastSecondaryTapDownPosition: lastSecondaryTapDownPosition,
       textLineHeight: textLineHeight,
@@ -274,7 +307,7 @@ class FluentTextSelectionControls extends TextSelectionControls {
   }
 }
 
-// /// Text selection controls that loosely follows Fluent design conventions.
+// /// Text selection controls that loosely follows Windows design conventions.
 // Generates the child that's passed into FluentTextSelectionToolbar.
 class _FluentTextSelectionControlsToolbar extends StatefulWidget {
   const _FluentTextSelectionControlsToolbar({
@@ -363,7 +396,7 @@ class _FluentTextSelectionControlsToolbarState
     final midpointAnchor = Offset(
       (widget.selectionMidpoint.dx - widget.globalEditableRegion.left).clamp(
         MediaQuery.paddingOf(context).left,
-        MediaQuery.sizeOf(context).width - MediaQuery.paddingOf(context).right,
+        MediaQuery.widthOf(context) - MediaQuery.paddingOf(context).right,
       ),
       widget.selectionMidpoint.dy - widget.globalEditableRegion.top,
     );
@@ -379,13 +412,15 @@ class _FluentTextSelectionControlsToolbarState
       String tooltip,
       VoidCallback onPressed,
     ) {
-      items.add(_FluentTextSelectionToolbarButton(
-        onPressed: onPressed,
-        icon: icon,
-        shortcut: shortcut,
-        tooltip: tooltip,
-        text: text,
-      ));
+      items.add(
+        _FluentTextSelectionToolbarButton(
+          onPressed: onPressed,
+          icon: icon,
+          shortcut: shortcut,
+          tooltip: tooltip,
+          text: text,
+        ),
+      );
     }
 
     if (widget.handleCut != null) {
@@ -437,15 +472,14 @@ class _FluentTextSelectionControlsToolbarState
 
     // If there is no option available, build an empty widget.
     if (items.isEmpty) {
-      return const SizedBox(width: 0.0, height: 0.0);
+      return const SizedBox.shrink();
     }
 
     return _FluentTextSelectionToolbar(
       anchor: switch (defaultTargetPlatform) {
         TargetPlatform.android ||
         TargetPlatform.iOS ||
-        TargetPlatform.fuchsia =>
-          const Offset(100, 100),
+        TargetPlatform.fuchsia => const Offset(100, 100),
         TargetPlatform.windows ||
         TargetPlatform.macOS ||
         TargetPlatform.linux =>
@@ -456,7 +490,7 @@ class _FluentTextSelectionControlsToolbarState
   }
 }
 
-/// A Fluent-style desktop text selection toolbar.
+/// A Windows-style desktop text selection toolbar.
 ///
 /// Typically displays buttons for text manipulation, e.g. copying and pasting
 /// text.
@@ -488,18 +522,16 @@ class _FluentTextSelectionToolbar extends StatelessWidget {
     final localAdjustment = switch (defaultTargetPlatform) {
       TargetPlatform.android ||
       TargetPlatform.iOS ||
-      TargetPlatform.fuchsia =>
-        Offset.zero,
+      TargetPlatform.fuchsia => Offset.zero,
       TargetPlatform.windows ||
       TargetPlatform.macOS ||
-      TargetPlatform.linux =>
-        Offset(_kToolbarScreenPadding, paddingAbove),
+      TargetPlatform.linux => Offset(_kToolbarScreenPadding, paddingAbove),
     };
 
-    final radius = BorderRadius.circular(6.0);
+    final radius = BorderRadius.circular(6);
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(
+      padding: EdgeInsetsDirectional.fromSTEB(
         _kToolbarScreenPadding,
         paddingAbove,
         _kToolbarScreenPadding,
@@ -514,12 +546,12 @@ class _FluentTextSelectionToolbar extends StatelessWidget {
           shape: RoundedRectangleBorder(borderRadius: radius),
           child: Container(
             color: theme.menuColor.withValues(alpha: kMenuColorOpacity),
-            padding: const EdgeInsetsDirectional.all(5.0),
+            padding: const EdgeInsetsDirectional.all(5),
             child: SizedBox(
               width: _kToolbarWidth,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                spacing: 5.0,
+                spacing: 5,
                 children: children,
               ),
             ),
@@ -530,7 +562,7 @@ class _FluentTextSelectionToolbar extends StatelessWidget {
   }
 }
 
-/// A button for the Fluent desktop text selection toolbar.
+/// A button for the Windows desktop text selection toolbar.
 class _FluentTextSelectionToolbarButton extends StatelessWidget {
   const _FluentTextSelectionToolbarButton({
     required this.onPressed,
@@ -553,7 +585,7 @@ class _FluentTextSelectionToolbarButton extends StatelessWidget {
       onPressed: onPressed,
       builder: (context, states) {
         final theme = FluentTheme.of(context);
-        final radius = BorderRadius.circular(4.0);
+        final radius = BorderRadius.circular(4);
 
         final body = theme.typography.body ?? const TextStyle();
 
@@ -561,67 +593,76 @@ class _FluentTextSelectionToolbarButton extends StatelessWidget {
           focused: states.isFocused,
           renderOutside: true,
           style: FocusThemeData(borderRadius: radius),
-          child: Builder(builder: (context) {
-            final widget = Container(
-              decoration: BoxDecoration(
-                color: ButtonThemeData.uncheckedInputColor(
-                  theme,
-                  states,
-                  transparentWhenNone: true,
+          child: Builder(
+            builder: (context) {
+              final widget = Container(
+                decoration: BoxDecoration(
+                  color: ButtonThemeData.uncheckedInputColor(
+                    theme,
+                    states,
+                    transparentWhenNone: true,
+                  ),
+                  borderRadius: radius,
                 ),
-                borderRadius: radius,
-              ),
-              padding: const EdgeInsetsDirectional.only(
-                top: 4.0,
-                bottom: 4.0,
-                start: 10.0,
-                end: 8.0,
-              ),
-              child: Row(mainAxisSize: MainAxisSize.min, children: [
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(end: 10.0),
-                  child: Icon(icon, size: 16.0),
+                padding: const EdgeInsetsDirectional.only(
+                  top: 4,
+                  bottom: 4,
+                  start: 10,
+                  end: 8,
                 ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsetsDirectional.only(end: 10.0),
-                    child: Text(
-                      text,
-                      style: body.merge(TextStyle(
-                        fontSize: 14.0,
-                        letterSpacing: -0.15,
-                        color: theme.inactiveColor,
-                      )),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsetsDirectional.only(end: 10),
+                      child: Icon(icon, size: 16),
                     ),
-                  ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsetsDirectional.only(end: 10),
+                        child: Text(
+                          text,
+                          style: body.merge(
+                            TextStyle(
+                              fontSize: 14,
+                              letterSpacing: -0.15,
+                              color: theme.inactiveColor,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (shortcut != null)
+                      Text(
+                        shortcut!,
+                        style: body.merge(
+                          const TextStyle(fontSize: 10, height: 0.7),
+                        ),
+                      ),
+                  ],
                 ),
-                if (shortcut != null)
-                  Text(
-                    shortcut!,
-                    style: body.merge(const TextStyle(
-                      fontSize: 10.0,
-                      height: 0.7,
-                    )),
-                  ),
-              ]),
-            );
-
-            if (tooltip != null) {
-              return Tooltip(
-                message: tooltip!,
-                child: widget,
               );
-            }
-            return widget;
-          }),
+
+              if (tooltip != null) {
+                return Tooltip(message: tooltip, child: widget);
+              }
+              return widget;
+            },
+          ),
         );
       },
     );
   }
 }
 
+/// A context menu button item for the undo action.
+///
+/// See also:
+///
+/// * [ContextMenuButtonItem], which is the base class for this class.
+/// * [FluentTextSelectionToolbar], which is the widget that displays the undo action.
 class UndoContextMenuButtonItem extends ContextMenuButtonItem {
-  const UndoContextMenuButtonItem({
-    required super.onPressed,
-  }) : super(type: ContextMenuButtonType.custom, label: 'Undo');
+  /// Creates a context menu button item for the undo action.
+  const UndoContextMenuButtonItem({required super.onPressed})
+    : super(type: ContextMenuButtonType.custom, label: 'Undo');
 }

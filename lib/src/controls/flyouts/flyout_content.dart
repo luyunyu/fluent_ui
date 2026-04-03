@@ -12,11 +12,11 @@ const kFlyoutMinConstraints = BoxConstraints(minWidth: 118);
 class FlyoutContent extends StatelessWidget {
   /// Creates a flyout content
   const FlyoutContent({
-    super.key,
     required this.child,
+    super.key,
     this.color,
     this.shape,
-    this.padding = const EdgeInsets.all(8.0),
+    this.padding = const EdgeInsetsDirectional.all(8),
     this.shadowColor = Colors.black,
     this.elevation = 8.0,
     this.constraints = kFlyoutMinConstraints,
@@ -67,13 +67,11 @@ class FlyoutContent extends StatelessWidget {
     final theme = FluentTheme.of(context);
     final textDirection = Directionality.of(context);
 
-    final resolvedShape = shape ??
+    final resolvedShape =
+        shape ??
         RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8.0),
-          side: BorderSide(
-            width: 1,
-            color: theme.resources.surfaceStrokeColorFlyout,
-          ),
+          borderRadius: BorderRadius.circular(8),
+          side: BorderSide(color: theme.resources.surfaceStrokeColorFlyout),
         );
 
     final resolvedBorderRadius = () {
@@ -128,17 +126,17 @@ class FlyoutContent extends StatelessWidget {
 class FlyoutListTile extends StatelessWidget {
   /// Creates a flyout list tile.
   const FlyoutListTile({
+    required this.text,
     super.key,
     this.onPressed,
     this.onLongPress,
     this.tooltip,
     this.icon,
-    required this.text,
     this.trailing,
     this.focusNode,
     this.autofocus = false,
     this.semanticLabel,
-    this.margin = const EdgeInsetsDirectional.only(bottom: 5.0),
+    this.margin = const EdgeInsetsDirectional.only(bottom: 5),
     this.selected = false,
     this.showSelectedIndicator = true,
   });
@@ -174,12 +172,16 @@ class FlyoutListTile extends StatelessWidget {
   /// {@macro fluent_ui.controls.inputs.HoverButton.semanticLabel}
   final String? semanticLabel;
 
+  /// The margin around the tile.
   final EdgeInsetsGeometry margin;
 
+  /// Whether this tile is currently selected.
   final bool selected;
 
+  /// Whether to show the selection indicator when [selected] is true.
   final bool showSelectedIndicator;
 
+  /// Whether this tile is enabled.
   bool get isEnabled => onPressed != null;
 
   @override
@@ -195,78 +197,85 @@ class FlyoutListTile extends StatelessWidget {
       semanticLabel: semanticLabel,
       builder: (context, states) {
         final theme = FluentTheme.of(context);
-        final radius = BorderRadius.circular(4.0);
+        final radius = BorderRadius.circular(4);
 
         if (selected) {
           states = {WidgetState.hovered};
         }
 
-        final foregroundColor =
-            ButtonThemeData.buttonForegroundColor(context, states);
+        final foregroundColor = ButtonThemeData.buttonForegroundColor(
+          context,
+          states,
+        );
 
-        Widget content = Stack(children: [
-          Container(
-            decoration: BoxDecoration(
-              color: ButtonThemeData.uncheckedInputColor(
-                theme,
-                states,
-                transparentWhenNone: true,
-              ),
-              borderRadius: radius,
-            ),
-            padding: const EdgeInsetsDirectional.only(
-              top: 4.0,
-              bottom: 4.0,
-              start: 10.0,
-              end: 8.0,
-            ),
-            child: Row(mainAxisSize: MainAxisSize.min, children: [
-              if (icon != null)
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(end: 10.0),
-                  child: IconTheme.merge(
-                    data: IconThemeData(size: 16.0, color: foregroundColor),
-                    child: icon!,
-                  ),
+        Widget content = Stack(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: ButtonThemeData.uncheckedInputColor(
+                  theme,
+                  states,
+                  transparentWhenNone: true,
                 ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsetsDirectional.only(end: 10.0),
-                  child: DefaultTextStyle.merge(
-                    style: TextStyle(
-                      fontSize: 14.0,
-                      letterSpacing: -0.15,
-                      color: foregroundColor,
+                borderRadius: radius,
+              ),
+              padding: const EdgeInsetsDirectional.only(
+                top: 4,
+                bottom: 4,
+                start: 10,
+                end: 8,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (icon != null)
+                    Padding(
+                      padding: const EdgeInsetsDirectional.only(end: 10),
+                      child: IconTheme.merge(
+                        data: IconThemeData(size: 16, color: foregroundColor),
+                        child: icon!,
+                      ),
                     ),
-                    child: text,
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsetsDirectional.only(end: 10),
+                      child: DefaultTextStyle.merge(
+                        style: TextStyle(
+                          fontSize: 14,
+                          letterSpacing: -0.15,
+                          color: foregroundColor,
+                        ),
+                        child: text,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              if (trailing != null)
-                DefaultTextStyle.merge(
-                  style: TextStyle(
-                    fontSize: 12.0,
-                    color: theme.resources.controlStrokeColorDefault,
-                    height: 0.7,
-                  ),
-                  child: trailing!,
-                ),
-            ]),
-          ),
-          if (selected && showSelectedIndicator)
-            PositionedDirectional(
-              top: 0,
-              bottom: 0,
-              child: Container(
-                margin: const EdgeInsets.symmetric(vertical: 6.0),
-                width: 2.5,
-                decoration: BoxDecoration(
-                  color: theme.accentColor.defaultBrushFor(theme.brightness),
-                  borderRadius: BorderRadius.circular(100),
-                ),
+                  if (trailing != null)
+                    DefaultTextStyle.merge(
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: theme.resources.controlStrokeColorDefault,
+                        height: 0.7,
+                      ),
+                      child: trailing!,
+                    ),
+                ],
               ),
             ),
-        ]);
+            if (selected && showSelectedIndicator)
+              PositionedDirectional(
+                top: 0,
+                bottom: 0,
+                child: Container(
+                  margin: const EdgeInsetsDirectional.symmetric(vertical: 6),
+                  width: 2.5,
+                  decoration: BoxDecoration(
+                    color: theme.accentColor.defaultBrushFor(theme.brightness),
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                ),
+              ),
+          ],
+        );
 
         if (tooltip != null) {
           content = Tooltip(message: tooltip, child: content);
